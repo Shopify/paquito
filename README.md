@@ -20,14 +20,14 @@ Or install it yourself as:
 
 ## Usage
 
-### `CoderChain`
+### `chain`
 
 `Paquito::CoderChain` allows to combine two or more serializers into one.
 
 Example:
 
 ```ruby
-compressed_yaml_coder = Paquito::CoderChain.new(YAML, Zlib)
+compressed_yaml_coder = Paquito.chain(YAML, Zlib)
 payload = compressed_yaml_coder.dump({ foo: 42 }) # YAML compressed with gzip
 compressed_yaml_coder.load(payload) # => { foo: 42 }
 ```
