@@ -1,0 +1,12 @@
+name: paquito
+
+up:
+  - ruby:
+      version: 2.7.4
+  - bundler
+
+commands:
+  test:
+    syntax: ""
+    desc: 'run all the tests'
+    run: bundle exec rake test
