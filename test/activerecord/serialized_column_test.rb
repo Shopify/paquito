@@ -41,7 +41,7 @@ class PaquitoSerializedColumnTest < PaquitoTest
     end
     assert_equal(
       "Cannot serialize PaquitoSerializedColumnTest::ClassWithRequiredArguments. " \
-      "Classes passed to `serialize` must have a 0 argument constructor.",
+        "Classes passed to `serialize` must have a 0 argument constructor.",
       error.message,
     )
   end

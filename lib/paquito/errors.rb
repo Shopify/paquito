@@ -5,6 +5,7 @@ module Paquito
 
   class PackError < Error
     attr_reader :receiver
+
     def initialize(msg, receiver = nil)
       super(msg)
       @receiver = receiver
