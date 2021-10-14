@@ -35,6 +35,8 @@ module Paquito
         @factory.load(payload, freeze: @freeze)
       rescue MessagePack::UnpackError => error
         raise UnpackError, error.message
+      rescue IOError => error
+        raise UnpackError, "#{error.class.name}, #{error.message}"
       end
     end
   end

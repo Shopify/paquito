@@ -200,6 +200,12 @@ class PaquitoCodecFactoryTest < PaquitoTest
       @codec.dump(2**128)
     end
     assert_equal "RangeError, bignum too big to convert into `unsigned long long'", error.message
+
+    payload = @codec.dump("foo")
+    error = assert_raises(Paquito::UnpackError) do
+      @codec.load(payload.byteslice(0..-2))
+    end
+    assert_equal "EOFError, end of buffer reached", error.message
   end
 
   test "all types are stable together" do
