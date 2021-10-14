@@ -75,6 +75,7 @@ module Paquito
         code: 0x00,
         packer: :to_s,
         unpacker: :to_sym,
+        optimized_symbols_parsing: true,
       }.freeze,
       "Time" => {
         code: 0x01,
