@@ -195,6 +195,13 @@ class PaquitoCodecFactoryTest < PaquitoTest
     end
   end
 
+  test "MessagePack errors are encapsulated" do
+    error = assert_raises Paquito::PackError do
+      @codec.dump(2**128)
+    end
+    assert_equal "RangeError, bignum too big to convert into `unsigned long long'", error.message
+  end
+
   test "all types are stable together" do
     assert_equal(
       "\x87\xC7\x06\x00symbol\xC7\x06\x00symbol\xC7\x06\x00string\xA6string\xC7\x05\x00array\x92\xD4\x00a\xA1b" \

@@ -27,6 +27,8 @@ module Paquito
         @factory.dump(object)
       rescue NoMethodError => error
         raise PackError.new(error.message, error.receiver)
+      rescue RangeError => error
+        raise PackError, "#{error.class.name}, #{error.message}"
       end
 
       def load(payload)
