@@ -35,7 +35,7 @@ module Paquito
       when COMPRESSED
         @compressor.load(data)
       else
-        raise ArgumentError, "invalid ConditionalCompressor version"
+        raise UnpackError, "invalid ConditionalCompressor version"
       end
     end
   end
