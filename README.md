@@ -120,6 +120,7 @@ coder.load(coder.dump(%i(foo bar).to_set)) # => #<Set: {:foo, :bar}>
 `Paquito::TypedStruct` is a opt-in Sorbet runtime plugin that allows `T::Struct` classes to be serializable. You need to explicitly include the module in the `T::Struct` classes that you will be serializing.
 
 Example
+
 ```ruby
 class MyStruct < T::Struct
   include Paquito::TypedStruct
@@ -134,9 +135,20 @@ my_struct.as_pack # => [26450, "foo", 1]
 MyStruct.from_pack([26450, "foo", 1]) # => <MyStruct bar=1, foo="foo">
 ```
 
-## Active Record utilities
+## Rails utilities
 
-`paquito` doesn't not depend on `rails` nor any of it's componement, however it does provide some optional utilities for it.
+`paquito` doesn't not depend on `rails` nor any of its components, however it does provide some optional utilities for it.
+
+### `CacheEntryCoder`
+
+`Paquito::CacheEntryCoder` turns an `ActiveSupport::Cache::Entry` instance into a simple `Array` instance. This allows to
+implement custom coders for `ActiveSupport::Cache`.
+
+Example:
+
+```ruby
+ActiveSupport::Cache::FileStore.new("tmp/cache", coder: Paquito.chain(Paquito::CacheEntryCoder, JSON))
+```
 
 ### `SerializedColumn`
 
