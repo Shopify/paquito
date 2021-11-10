@@ -7,7 +7,7 @@ GIT
 PATH
   remote: .
   specs:
-    paquito (0.2.0)
+    paquito (0.2.1)
       msgpack
 
 GEM
