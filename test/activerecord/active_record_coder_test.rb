@@ -68,4 +68,11 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
     end
     assert_equal "undefined association: foo", error.message
   end
+
+  test "works with json column with symbol keys assigned" do
+    extension = Extension.new(executable: { a: "b" })
+    codec_reloaded = @codec.load(@codec.dump(extension))
+
+    assert_equal({ "a" => "b" }, codec_reloaded.attributes["executable"])
+  end
 end
