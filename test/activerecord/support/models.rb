@@ -20,6 +20,10 @@ ActiveRecord::Schema.define do
     t.references(:feature)
   end
 
+  create_table :extensions, force: true do |t|
+    t.json(:executable)
+  end
+
   create_table :products, force: true do |t|
     t.references(:shop)
     t.string(:name)
@@ -68,6 +72,9 @@ end
 
 class Domain < ActiveRecord::Base
   belongs_to :shop
+end
+
+class Extension < ActiveRecord::Base
 end
 
 online_store = Feature.create!(name: "Online Store")
