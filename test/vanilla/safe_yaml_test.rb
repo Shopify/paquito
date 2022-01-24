@@ -5,7 +5,7 @@ require "test_helper"
 class SafeYAMLTest < PaquitoTest
   def setup
     @coder = Paquito::SafeYAML.new(
-      permitted_classes: ["Hash", "Set"],
+      permitted_classes: ["Hash", "Set", "Integer"],
       deprecated_classes: ["BigDecimal"],
       aliases: true,
     )
@@ -44,8 +44,30 @@ class SafeYAMLTest < PaquitoTest
     assert_equal 'Tried to dump unspecified class: "BigDecimal"', error.message
   end
 
-  test "#dump rejects permitted classes" do
+  test "#dump accepts permitted classes" do
     expected = Set[1, 2]
     assert_equal expected, @coder.load(@coder.dump(expected))
+  end
+
+  test "#dump rejects objects that respond to #encode_with" do
+    not_permitted_test_type = Class.new do
+      def self.name
+        "NotPermittedClass"
+      end
+
+      def encode_with(coder)
+        coder["a"] = 1
+      end
+    end
+
+    object_to_dump = not_permitted_test_type.new
+
+    assert(object_to_dump.respond_to?(:encode_with))
+
+    error = assert_raises(Paquito::UnsupportedType) do
+      @coder.dump(object_to_dump)
+    end
+
+    assert_equal 'Tried to dump unspecified class: "NotPermittedClass"', error.message
   end
 end

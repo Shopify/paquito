@@ -43,31 +43,36 @@ module Paquito
 
     class RestrictedYAMLTree < Psych::Visitors::YAMLTree
       class DispatchCache
-        def initialize(visitor, cache, permitted_classes)
+        def initialize(visitor, cache)
           @visitor = visitor
           @cache = cache
-          @permitted_classes = permitted_classes
-
-          @permitted_cache = Hash.new do |h, klass|
-            unless @permitted_classes.include?(klass.name)
-              raise UnsupportedType, "Tried to dump unspecified class: #{klass.name.inspect}"
-            end
-
-            h[klass] = true
-          end.compare_by_identity
         end
 
         def [](klass)
-          if @permitted_cache[klass]
-            @cache[klass]
-          end
+          @cache[klass] if @visitor.permitted_class?(klass)
         end
       end
 
       def initialize(...)
         super
         @permitted_classes = Set.new(@options[:permitted_classes])
-        @dispatch_cache = DispatchCache.new(self, @dispatch_cache, @permitted_classes)
+        @dispatch_cache = DispatchCache.new(self, @dispatch_cache)
+        @permitted_cache = Hash.new do |h, klass|
+          unless @permitted_classes.include?(klass.name)
+            raise UnsupportedType, "Tried to dump unspecified class: #{klass.name.inspect}"
+          end
+
+          h[klass] = true
+        end.compare_by_identity
+      end
+
+      def dump_coder(target)
+        return unless permitted_class?(target.class)
+        super
+      end
+
+      def permitted_class?(klass)
+        @permitted_cache[klass]
       end
     end
   end
