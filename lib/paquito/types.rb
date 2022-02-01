@@ -194,11 +194,14 @@ module Paquito
           end
 
           type_attributes = TYPES.fetch(name)
+          type_attributes = type_attributes.merge(
+            packer: curry_callback(type_attributes.fetch(:packer), factory),
+            unpacker: curry_callback(type_attributes.fetch(:unpacker), factory),
+          )
           factory.register_type(
             type_attributes.fetch(:code),
             type,
-            packer: curry_callback(type_attributes.fetch(:packer), factory),
-            unpacker: curry_callback(type_attributes.fetch(:unpacker), factory),
+            type_attributes
           )
         end
       end
