@@ -73,7 +73,7 @@ module Paquito
     TYPES = {
       "Symbol" => {
         code: 0x00,
-        packer: :to_s,
+        packer: Symbol.method_defined?(:name) ? :name : :to_s,
         unpacker: :to_sym,
         optimized_symbols_parsing: true,
       }.freeze,
