@@ -1,9 +1,3 @@
-GIT
-  remote: https://github.com/msgpack/msgpack-ruby.git
-  revision: ea20842ea732f4d625fd30c7b8f67655d73652f2
-  specs:
-    msgpack (1.4.2)
-
 PATH
   remote: .
   specs:
@@ -29,6 +23,7 @@ GEM
     i18n (1.8.10)
       concurrent-ruby (~> 1.0)
     minitest (5.14.4)
+    msgpack (1.4.4)
     parallel (1.21.0)
     parser (3.0.2.0)
       ast (~> 2.4.1)
@@ -66,7 +61,6 @@ DEPENDENCIES
   activesupport (>= 7.0.0.alpha2)
   byebug
   minitest (~> 5.0)
-  msgpack!
   paquito!
   rake (~> 13.0)
   rubocop
@@ -75,4 +69,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   2.2.22
+   2.2.33
