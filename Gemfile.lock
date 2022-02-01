@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    paquito (0.3.0)
+    paquito (0.3.1)
       msgpack
 
 GEM
