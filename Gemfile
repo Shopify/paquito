@@ -6,8 +6,8 @@ source "https://rubygems.org"
 gemspec
 
 gem "rake", "~> 13.0"
-gem "activesupport", ">= 7.0.0.alpha2"
-gem "activerecord", ">= 7.0.0.alpha2"
+gem "activesupport", ">= 7.0.0"
+gem "activerecord", ">= 7.0.0"
 gem "sqlite3"
 
 gem "minitest", "~> 5.0"
