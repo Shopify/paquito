@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ### `chain`
 
-`Paquito::CoderChain` allows to combine two or more serializers into one.
+`Paquito::CoderChain` combines two or more serializers into one.
 
 Example:
 
@@ -34,7 +34,7 @@ compressed_yaml_coder.load(payload) # => { foo: 42 }
 
 ### `ConditionalCompressor`
 
-`Paquito::ConditionalCompressor` compress payloads if they are over a defined size.
+`Paquito::ConditionalCompressor` compresses payloads if they are over a defined size.
 
 Example:
 ```ruby
@@ -45,8 +45,8 @@ coder.dump("foo" * 500) # => "\x01<compressed-data....>"
 
 ### `SingleBytePrefixVersion`
 
-`Paquito::SingleBytePrefixVersion` prepends a version prefix to the payloads, which then allow to seemlessly transition from
-different serialization methods.
+`Paquito::SingleBytePrefixVersion` prepends a version prefix to the payloads, which allows you to seamlessly transition
+between different serialization methods.
 
 The first argument is the current version used for newly generated payloads.
 
@@ -64,9 +64,9 @@ coder.load("\x00---\n:foo: 42") # => { foo: 42 }
 
 ### `CommentPrefixVersion`
 
-Similar to the single byte prefix, but meant to be human readable and to allow for migrating unversionned payloads.
+Similar to the single byte prefix, but meant to be human readable and to allow for migrating unversioned payloads.
 
-Payload without a version prefix are assumed to be version `0`.
+Payloads without a version prefix are assumed to be version `0`.
 
 The first argument is the current version used for newly generated payloads.
 
@@ -84,7 +84,7 @@ coder.dump([1]) # => "#☠1☢\n[1]"
 
 ### `allow_nil`
 
-In some situation where you'd rather not serialize `nil`, you can use the `Paquito.allow_nil` shorthand:
+In some situations where you'd rather not serialize `nil`, you can use the `Paquito.allow_nil` shorthand:
 
 ```ruby
 coder = Paquito.allow_nil(Marshal)
@@ -95,7 +95,7 @@ coder.load(nil) # => nil
 ### `TranslateErrors`
 
 If you do need to handle serialization or deserialization errors, for instance to fallback to acting like a cache miss,
-`Paquito::TranslateErrors` translate all underlying exceptions into `Paquito::Error` descendants.
+`Paquito::TranslateErrors` translates all underlying exceptions into `Paquito::Error` descendants.
 
 Example:
 
@@ -117,7 +117,8 @@ coder.load(coder.dump(%i(foo bar).to_set)) # => #<Set: {:foo, :bar}>
 
 ### `TypedStruct`
 
-`Paquito::TypedStruct` is a opt-in Sorbet runtime plugin that allows `T::Struct` classes to be serializable. You need to explicitly include the module in the `T::Struct` classes that you will be serializing.
+`Paquito::TypedStruct` is a opt-in Sorbet runtime plugin that allows `T::Struct` classes to be serializable. You need
+to explicitly include the module in the `T::Struct` classes that you will be serializing.
 
 Example
 
@@ -137,12 +138,12 @@ MyStruct.from_pack([26450, "foo", 1]) # => <MyStruct bar=1, foo="foo">
 
 ## Rails utilities
 
-`paquito` doesn't not depend on `rails` nor any of its components, however it does provide some optional utilities for it.
+`paquito` doesn't depend on `rails` or any of its components, however it does provide some optional utilities.
 
 ### `CacheEntryCoder`
 
-`Paquito::CacheEntryCoder` turns an `ActiveSupport::Cache::Entry` instance into a simple `Array` instance. This allows to
-implement custom coders for `ActiveSupport::Cache`.
+`Paquito::CacheEntryCoder` turns an `ActiveSupport::Cache::Entry` instance into a simple `Array` instance. This allows
+you to implement custom coders for `ActiveSupport::Cache`.
 
 Example:
 
@@ -152,7 +153,7 @@ ActiveSupport::Cache::FileStore.new("tmp/cache", coder: Paquito.chain(Paquito::C
 
 ### `SerializedColumn`
 
-`Paquito::SerializedColumn` allows to decorate any encoder to behave like Rails's builtin `YAMLColumn`
+`Paquito::SerializedColumn` allows you to decorate any encoder to behave like Rails's builtin `YAMLColumn`
 
 Example:
 
