@@ -5,15 +5,24 @@ require "paquito/coder_chain"
 
 module Paquito
   class CodecFactory
-    def self.build(types, freeze: false, serializable_type: false)
-      factory =
-        if types.empty? && !serializable_type
-          MessagePack
-        else
-          MessagePack::Factory.new
-        end
+    def self.build(types, freeze: false, serializable_type: false, pool: 1)
+      factory = if types.empty? && !serializable_type
+        MessagePack::DefaultFactory
+      else
+        MessagePack::Factory.new
+      end
+
       Types.register(factory, types) unless types.empty?
       Types.register_serializable_type(factory) if serializable_type
+
+      if pool && pool > 0 && factory.respond_to?(:pool)
+        if serializable_type || types.any? { |t| Types.recursive?(t) }
+          pool *= 2
+        end
+        factory = factory.freeze.pool(pool, freeze: freeze)
+        freeze = false
+      end
+
       MessagePackCodec.new(factory, freeze: freeze)
     end
 
@@ -32,7 +41,11 @@ module Paquito
       end
 
       def load(payload)
-        @factory.load(payload, freeze: @freeze)
+        if @freeze
+          @factory.load(payload, freeze: @freeze)
+        else
+          @factory.load(payload)
+        end
       rescue MessagePack::UnpackError => error
         raise UnpackError, error.message
       rescue IOError => error
