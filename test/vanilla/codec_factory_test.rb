@@ -4,7 +4,7 @@ require "test_helper"
 
 class PaquitoCodecFactoryTest < PaquitoTest
   def setup
-    @codec = Paquito::CodecFactory.build([Symbol, Time, DateTime, Date, BigDecimal])
+    @codec = Paquito::CodecFactory.build([Symbol, Time, DateTime, Date, BigDecimal], pool: 1)
   end
 
   test "correctly encodes Symbol objects" do
