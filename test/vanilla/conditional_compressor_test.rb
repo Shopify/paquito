@@ -41,7 +41,7 @@ class ConditionalCompressorTest < PaquitoTest
 
   test "it raises UnpackError when the byte prefix is corrupted" do
     @coder = Paquito::ConditionalCompressor.new(Zlib, 4)
-    error = assert_raises Paquito::UnpackError do
+    error = assert_raises(Paquito::UnpackError) do
       @coder.load("\x02foobar".b)
     end
     assert_includes error.message, "invalid ConditionalCompressor version"

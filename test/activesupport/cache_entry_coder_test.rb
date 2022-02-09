@@ -14,22 +14,22 @@ class PaquitoCacheEntryCoderTest < PaquitoTest
 
   def test_simple_key
     @store.write("foo", "bar")
-    assert_equal ["bar"].to_json, raw_cache_read("foo")
+    assert_equal(["bar"].to_json, raw_cache_read("foo"))
   end
 
   def test_simple_key_with_expriry
     @store.write("foo", "bar", expires_in: 5.minutes)
     value, expiry = JSON.parse(raw_cache_read("foo"))
-    assert_equal "bar", value
-    assert_instance_of Float, expiry
+    assert_equal("bar", value)
+    assert_instance_of(Float, expiry)
   end
 
   def test_simple_key_with_version
     @store.write("foo", "bar", version: "v1")
     value, expiry, version = JSON.parse(raw_cache_read("foo"))
-    assert_equal "bar", value
-    assert_nil expiry
-    assert_equal "v1", version
+    assert_equal("bar", value)
+    assert_nil(expiry)
+    assert_equal("v1", version)
   end
 
   private

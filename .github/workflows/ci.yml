@@ -3,6 +3,21 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7'
+          bundler-cache: true
+      - name: Run test
+        run: bundle exec rubocop
+
   rubies:
     runs-on: ubuntu-latest
     strategy:
