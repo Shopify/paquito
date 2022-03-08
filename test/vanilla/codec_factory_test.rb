@@ -243,4 +243,12 @@ class PaquitoCodecFactoryTest < PaquitoTest
         "bigdecimal\xC7\n\x0427:0.123e3\xD6\x00hash\x81\xD4\x00a\x91\xD4\x00a".b
     ))
   end
+
+  if defined? MessagePack::Bigint
+    test "bigint support" do
+      @codec = Paquito::CodecFactory.build([Integer])
+      bigint = 2**150
+      assert_equal bigint, @codec.load(@codec.dump(bigint))
+    end
+  end
 end

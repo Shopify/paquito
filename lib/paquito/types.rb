@@ -181,7 +181,21 @@ module Paquito
         unpacker: ->(factory, value) { factory.load(value).to_set },
       },
       # Object => { code: 0x7f }, reserved for serializable Object type
-    }.freeze
+    }
+    begin
+      require "msgpack/bigint"
+
+      TYPES["Integer"] = {
+        code: -122,
+        packer: MessagePack::Bigint.method(:to_msgpack_ext),
+        unpacker: MessagePack::Bigint.method(:from_msgpack_ext),
+        oversized_integer_extension: true,
+      }
+    rescue LoadError
+      # expected on older msgpack
+    end
+
+    TYPES.freeze
 
     class << self
       def register(factory, types)
