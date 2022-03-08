@@ -220,6 +220,11 @@ module Paquito
         end
       end
 
+      def recursive?(type)
+        type_attributes = TYPES.fetch(type.name)
+        recursive_callback?(type_attributes[:packer]) || recursive_callback?(type_attributes[:unpacker])
+      end
+
       def register_serializable_type(factory)
         factory.register_type(
           0x7f,
@@ -249,6 +254,10 @@ module Paquito
       end
 
       private
+
+      def recursive_callback?(callback)
+        callback.respond_to?(:arity) && callback.arity != 1
+      end
 
       def curry_callback(callback, factory)
         return callback.to_proc if callback.is_a?(Symbol)
