@@ -37,10 +37,12 @@ module Paquito
         def register(klass, packer: nil, unpacker:)
           if packer
             raise ArgumentError, "packer for #{klass} already defined" if packers.key?(klass)
+
             packers[klass] = packer
           end
 
           raise ArgumentError, "unpacker for #{klass} already defined" if unpackers.key?(klass)
+
           unpackers[klass] = unpacker
 
           self
@@ -155,6 +157,7 @@ module Paquito
           unless value.instance_of?(ActiveSupport::HashWithIndifferentAccess)
             raise PackError.new("cannot pack HashWithIndifferentClass subclass", value)
           end
+
           factory.dump(value.to_h)
         end,
         unpacker: ->(factory, value) { HashWithIndifferentAccess.new(factory.load(value)) },
@@ -263,6 +266,7 @@ module Paquito
       def curry_callback(callback, factory)
         return callback.to_proc if callback.is_a?(Symbol)
         return callback if callback.arity == 1
+
         callback.curry.call(factory)
       end
     end

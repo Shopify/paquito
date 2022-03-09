@@ -8,11 +8,13 @@ module Paquito
 
     def dump(object)
       return nil if object.nil?
+
       @coder.dump(object)
     end
 
     def load(payload)
       return nil if payload.nil?
+
       @coder.load(payload)
     end
   end

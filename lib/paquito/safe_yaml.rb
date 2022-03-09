@@ -68,6 +68,7 @@ module Paquito
 
       def dump_coder(target)
         return unless permitted_class?(target.class)
+
         super
       end
 

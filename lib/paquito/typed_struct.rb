@@ -41,6 +41,7 @@ module Paquito
         if pack_digest != digest
           raise(VersionMismatchError, "#{self} digests do not match")
         end
+
         new(**props.keys.zip(values).to_h)
       end
 

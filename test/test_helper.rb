@@ -19,6 +19,7 @@ class PaquitoTest < Minitest::Test
       test_name = "test_#{name.gsub(/\s+/, "_")}".to_sym
       defined = method_defined?(test_name)
       raise "#{test_name} is already defined in #{self}" if defined
+
       if block_given?
         define_method(test_name, &block)
       else
