@@ -72,13 +72,13 @@ module Paquito
     # New types can be added as long as they have unique #code.
     TYPES = {
       "Symbol" => {
-        code: 0x00,
+        code: 0,
         packer: Symbol.method_defined?(:name) ? :name : :to_s,
         unpacker: :to_sym,
         optimized_symbols_parsing: true,
       }.freeze,
       "Time" => {
-        code: 0x01,
+        code: 1,
         packer: ->(value) do
           rational = value.utc.to_r
           [rational.numerator, rational.denominator].pack(TIME_FORMAT)
@@ -89,7 +89,7 @@ module Paquito
         end,
       }.freeze,
       "DateTime" => {
-        code: 0x02,
+        code: 2,
         packer: ->(value) do
           sec = value.sec + value.sec_fraction
           offset = value.offset
@@ -129,7 +129,7 @@ module Paquito
         end,
       }.freeze,
       "Date" => {
-        code: 0x03,
+        code: 3,
         packer: ->(value) do
           [value.year, value.month, value.day].pack(DATE_FORMAT)
         end,
@@ -139,18 +139,18 @@ module Paquito
         end,
       }.freeze,
       "BigDecimal" => {
-        code: 0x04,
+        code: 4,
         packer: :_dump,
         unpacker: BigDecimal.method(:_load),
       }.freeze,
       # Range => { code: 0x05 }, do not recycle that code
       "ActiveRecord::Base" => {
-        code: 0x6,
+        code: 6,
         packer: ->(value) { ActiveRecordPacker.dump(value) },
         unpacker: ->(value) { ActiveRecordPacker.load(value) },
       }.freeze,
       "ActiveSupport::HashWithIndifferentAccess" => {
-        code: 0x7,
+        code: 7,
         packer: ->(factory, value) do
           unless value.instance_of?(ActiveSupport::HashWithIndifferentAccess)
             raise PackError.new("cannot pack HashWithIndifferentClass subclass", value)
@@ -160,7 +160,7 @@ module Paquito
         unpacker: ->(factory, value) { HashWithIndifferentAccess.new(factory.load(value)) },
       },
       "ActiveSupport::TimeWithZone" => {
-        code: 0x8,
+        code: 8,
         packer: ->(value) do
           [
             value.utc.to_i,
@@ -176,17 +176,18 @@ module Paquito
         end,
       },
       "Set" => {
-        code: 0x9,
+        code: 9,
         packer: ->(factory, value) { factory.dump(value.to_a) },
         unpacker: ->(factory, value) { factory.load(value).to_set },
       },
-      # Object => { code: 0x7f }, reserved for serializable Object type
+      # Integer => { code: 10 }, reserved for oversized Integer
+      # Object => { code: 127 }, reserved for serializable Object type
     }
     begin
       require "msgpack/bigint"
 
       TYPES["Integer"] = {
-        code: -122,
+        code: 10,
         packer: MessagePack::Bigint.method(:to_msgpack_ext),
         unpacker: MessagePack::Bigint.method(:from_msgpack_ext),
         oversized_integer_extension: true,
