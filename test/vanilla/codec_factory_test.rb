@@ -218,7 +218,7 @@ class PaquitoCodecFactoryTest < PaquitoTest
         symbol: :symbol,
         string: "string",
         array: [:a, "b"],
-        time: Time.new(2000, 1, 1, 2, 2, 2, "UTC"),
+        time: Time.new(2000, 1, 1, 2, 2, 2, "+00:00"),
         datetime: DateTime.new(2000, 1, 1, 4, 5, 6, "UTC"), # rubocop:disable Style/DateTime
         date: Date.new(2000, 1, 1),
         hash: { a: [:a] },
@@ -229,7 +229,7 @@ class PaquitoCodecFactoryTest < PaquitoTest
       symbol: :symbol,
       string: "string",
       array: [:a, "b"],
-      time: Time.new(2000, 1, 1, 2, 2, 2, "UTC"),
+      time: Time.new(2000, 1, 1, 2, 2, 2, "+00:00"),
       datetime: DateTime.new(2000, 1, 1, 4, 5, 6, "UTC"), # rubocop:disable Style/DateTime
       date: Date.new(2000, 1, 1),
       bigdecimal: BigDecimal(123),

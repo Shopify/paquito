@@ -119,13 +119,14 @@ module Paquito
         @ids = {}.compare_by_identity
       end
 
-      def map(...)
-        @instances.map(...)
+      def map(&block)
+        @instances.map(&block)
       end
 
-      def fetch(...)
-        @instances.fetch(...)
+      def fetch(*args, &block)
+        @instances.fetch(*args, &block)
       end
+      ruby2_keywords :fetch if respond_to?(:ruby2_keywords, true)
 
       def push(instance)
         id = @ids[instance] = @instances.size

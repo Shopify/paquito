@@ -3,7 +3,8 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
 
-suites = [:vanilla, :activesupport, :activerecord]
+suites = [:vanilla, :activesupport]
+suites << :activerecord if RUBY_VERSION >= "2.7"
 namespace :test do
   suites.each do |suite|
     Rake::TestTask.new(suite) do |t|
