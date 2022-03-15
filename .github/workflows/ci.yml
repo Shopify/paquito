@@ -13,7 +13,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '2.7'
+          ruby-version: '2.6'
           bundler-cache: true
       - name: Run test
         run: bundle exec rubocop
@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ ruby-head, '3.0', '2.7' ]
+        ruby: [ ruby-head, '3.0', '2.7', '2.6' ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

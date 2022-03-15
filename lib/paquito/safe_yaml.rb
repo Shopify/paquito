@@ -53,7 +53,7 @@ module Paquito
         end
       end
 
-      def initialize(...)
+      def initialize(*)
         super
         @permitted_classes = Set.new(@options[:permitted_classes])
         @dispatch_cache = DispatchCache.new(self, @dispatch_cache)
@@ -65,6 +65,7 @@ module Paquito
           h[klass] = true
         end.compare_by_identity
       end
+      ruby2_keywords :initialize if respond_to?(:ruby2_keywords, true)
 
       def dump_coder(target)
         return unless permitted_class?(target.class)

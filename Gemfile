@@ -8,8 +8,8 @@ gemspec
 gem "msgpack", github: "msgpack/msgpack-ruby"
 
 gem "rake", "~> 13.0"
-gem "activesupport", ">= 7.0.0"
-gem "activerecord", ">= 7.0.0"
+gem "activesupport"
+gem "activerecord"
 gem "sqlite3"
 gem "benchmark-ips"
 
