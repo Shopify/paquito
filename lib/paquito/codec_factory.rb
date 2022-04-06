@@ -16,9 +16,6 @@ module Paquito
       Types.register_serializable_type(factory) if serializable_type
 
       if pool && pool > 0 && factory.respond_to?(:pool)
-        if serializable_type || types.any? { |t| Types.recursive?(t) }
-          pool *= 2
-        end
         factory = factory.freeze.pool(pool, freeze: freeze)
         freeze = false
       end

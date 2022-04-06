@@ -1,14 +1,8 @@
-GIT
-  remote: https://github.com/msgpack/msgpack-ruby.git
-  revision: b69e6d6965ef46890885ddf73f02b820f3185d80
-  specs:
-    msgpack (1.4.5)
-
 PATH
   remote: .
   specs:
     paquito (0.5.0)
-      msgpack
+      msgpack (>= 1.5.1)
 
 GEM
   remote: https://rubygems.org/
@@ -31,6 +25,7 @@ GEM
     i18n (1.10.0)
       concurrent-ruby (~> 1.0)
     minitest (5.15.0)
+    msgpack (1.5.1)
     parallel (1.21.0)
     parser (3.1.1.0)
       ast (~> 2.4.1)
@@ -70,7 +65,6 @@ DEPENDENCIES
   benchmark-ips
   byebug
   minitest (~> 5.0)
-  msgpack!
   paquito!
   rake (~> 13.0)
   rubocop
