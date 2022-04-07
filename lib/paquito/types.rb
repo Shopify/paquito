@@ -75,8 +75,8 @@ module Paquito
     TYPES = {
       "Symbol" => {
         code: 0,
-        packer: Symbol.method_defined?(:name) ? :name : :to_s,
-        unpacker: :to_sym,
+        packer: Symbol.method_defined?(:name) ? :name.to_proc : :to_s.to_proc,
+        unpacker: :to_sym.to_proc,
         optimized_symbols_parsing: true,
       }.freeze,
       "Time" => {
@@ -153,14 +153,15 @@ module Paquito
       }.freeze,
       "ActiveSupport::HashWithIndifferentAccess" => {
         code: 7,
-        packer: ->(factory, value) do
+        packer: ->(value, packer) do
           unless value.instance_of?(ActiveSupport::HashWithIndifferentAccess)
             raise PackError.new("cannot pack HashWithIndifferentClass subclass", value)
           end
 
-          factory.dump(value.to_h)
+          packer.write(value.to_h)
         end,
-        unpacker: ->(factory, value) { HashWithIndifferentAccess.new(factory.load(value)) },
+        unpacker: ->(unpacker) { HashWithIndifferentAccess.new(unpacker.read) },
+        recursive: true,
       },
       "ActiveSupport::TimeWithZone" => {
         code: 8,
@@ -180,8 +181,9 @@ module Paquito
       },
       "Set" => {
         code: 9,
-        packer: ->(factory, value) { factory.dump(value.to_a) },
-        unpacker: ->(factory, value) { factory.load(value).to_set },
+        packer: ->(value, packer) { packer.write(value.to_a) },
+        unpacker: ->(unpacker) { unpacker.read.to_set },
+        recursive: true,
       },
       # Integer => { code: 10 }, reserved for oversized Integer
       # Object => { code: 127 }, reserved for serializable Object type
@@ -212,21 +214,12 @@ module Paquito
           end
 
           type_attributes = TYPES.fetch(name)
-          type_attributes = type_attributes.merge(
-            packer: curry_callback(type_attributes.fetch(:packer), factory),
-            unpacker: curry_callback(type_attributes.fetch(:unpacker), factory),
-          )
           factory.register_type(
             type_attributes.fetch(:code),
             type,
             type_attributes
           )
         end
-      end
-
-      def recursive?(type)
-        type_attributes = TYPES.fetch(type.name)
-        recursive_callback?(type_attributes[:packer]) || recursive_callback?(type_attributes[:unpacker])
       end
 
       def register_serializable_type(factory)
@@ -255,19 +248,6 @@ module Paquito
 
       def define_custom_type(klass, packer: nil, unpacker:)
         CustomTypesRegistry.register(klass, packer: packer, unpacker: unpacker)
-      end
-
-      private
-
-      def recursive_callback?(callback)
-        callback.respond_to?(:arity) && callback.arity != 1
-      end
-
-      def curry_callback(callback, factory)
-        return callback.to_proc if callback.is_a?(Symbol)
-        return callback if callback.arity == 1
-
-        callback.curry.call(factory)
       end
     end
   end
