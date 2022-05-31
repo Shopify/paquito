@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     paquito (0.6.0)
-      msgpack (>= 1.5.1)
+      msgpack (>= 1.5.2)
 
 GEM
   remote: https://rubygems.org/
@@ -25,7 +25,7 @@ GEM
     i18n (1.10.0)
       concurrent-ruby (~> 1.0)
     minitest (5.15.0)
-    msgpack (1.5.1)
+    msgpack (1.5.2)
     parallel (1.21.0)
     parser (3.1.1.0)
       ast (~> 2.4.1)
@@ -73,4 +73,4 @@ DEPENDENCIES
   sqlite3
 
 BUNDLED WITH
-   2.3.11
+   2.3.8
