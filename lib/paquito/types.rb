@@ -206,11 +206,11 @@ module Paquito
     class << self
       def register(factory, types)
         types.each do |type|
-          name = type.name
-
           # Up to Rails 7 ActiveSupport::TimeWithZone#name returns "Time"
-          if name == "Time" && defined?(ActiveSupport::TimeWithZone)
-            name = "ActiveSupport::TimeWithZone" if type == ActiveSupport::TimeWithZone
+          name = if defined?(ActiveSupport::TimeWithZone) && type == ActiveSupport::TimeWithZone
+            "ActiveSupport::TimeWithZone"
+          else
+            type.name
           end
 
           type_attributes = TYPES.fetch(name)
