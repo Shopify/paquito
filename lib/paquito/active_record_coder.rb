@@ -100,7 +100,12 @@ module Paquito
         rescue NameError
           raise ClassMissingError, "undefined class: #{class_name}"
         end
-        klass.instantiate(attributes_from_database)
+
+        klass.instantiate(attributes_from_database).tap do |record|
+          next unless record.public_send(klass.primary_key).nil?
+
+          record.instance_variable_set(:@new_record, true)
+        end
       end
     end
 

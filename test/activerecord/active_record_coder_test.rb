@@ -75,4 +75,15 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
 
     assert_equal({ "a" => "b" }, codec_reloaded.attributes["executable"])
   end
+
+  test "new records saveable after being deserialized" do
+    shop = Shop.new(name: "foo", owner: User.new(email: "foo@bar.com"))
+    dump = Paquito::ActiveRecordCoder.dump(shop)
+
+    before = Shop.count
+    Paquito::ActiveRecordCoder.load(dump).save
+    assert_equal before + 1, Shop.count
+
+    shop.destroy
+  end
 end
