@@ -101,11 +101,11 @@ module Paquito
           raise ClassMissingError, "undefined class: #{class_name}"
         end
 
-        klass.instantiate(attributes_from_database).tap do |record|
-          next unless record.public_send(klass.primary_key).nil?
+        attributes = klass.attributes_builder
+          .build_from_database(attributes_from_database, {})
+        new_record = attributes[klass.primary_key].value.nil?
 
-          record.instance_variable_set(:@new_record, true)
-        end
+        klass.allocate.init_with_attributes(attributes, new_record)
       end
     end
 
