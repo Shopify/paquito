@@ -4,6 +4,8 @@ require "paquito/errors"
 
 module Paquito
   class ActiveRecordCoder
+    EMPTY_HASH = {}.freeze
+
     class << self
       def dump(record)
         instances = InstanceTracker.new
@@ -94,13 +96,17 @@ module Paquito
         attributes
       end
 
-      def deserialize_record(class_name, attributes_from_database)
+      def deserialize_record(class_name, attributes_from_database, new_record = false)
         begin
           klass = Object.const_get(class_name)
         rescue NameError
           raise ClassMissingError, "undefined class: #{class_name}"
         end
-        klass.instantiate(attributes_from_database)
+
+        # Ideally we'd like to call `klass.instantiate`, however it doesn't allow to pass
+        # wether the record was persisted or not.
+        attributes = klass.attributes_builder.build_from_database(attributes_from_database, EMPTY_HASH)
+        klass.allocate.init_with_attributes(attributes, new_record)
       end
     end
 
