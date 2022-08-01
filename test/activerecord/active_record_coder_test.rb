@@ -35,6 +35,20 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
     assert_equal shop.products.first, recovered_value.products.first
   end
 
+  test "encodes wether the record was persisted or not" do
+    shop = Shop.find_by!(name: "Snow Devil")
+    assert_predicate shop, :persisted?
+    recovered_shop = @codec.load(@codec.dump(shop))
+    assert_predicate recovered_shop, :persisted?
+
+    new_shop = @codec.load([0, ["Shop", {}, true]])
+    refute_predicate new_shop, :persisted?
+
+    skip("Will pass on Paquito 0.7.0")
+    recovered_shop = @codec.load(@codec.dump(new_shop))
+    refute_predicate recovered_shop, :persisted?
+  end
+
   test "format is stable across payload commits" do
     shop = Shop.preload(:products).find_by!(name: "Snow Devil")
 
