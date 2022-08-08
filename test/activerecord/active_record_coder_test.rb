@@ -44,7 +44,6 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
     new_shop = @codec.load([0, ["Shop", {}, true]])
     refute_predicate new_shop, :persisted?
 
-    skip("Will pass on Paquito 0.7.0")
     recovered_shop = @codec.load(@codec.dump(new_shop))
     refute_predicate recovered_shop, :persisted?
   end
