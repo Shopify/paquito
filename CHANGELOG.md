@@ -1,5 +1,7 @@
 # Unreleased
 
+# 0.7.0
+
 * Make ActiveRecordCoder now encode wether records were persisted or not (#12).
   This change is backward compatible with Paquito 0.6.2 but NOT OLDER VERSIONS.
 
