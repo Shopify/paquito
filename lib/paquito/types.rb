@@ -160,7 +160,7 @@ module Paquito
 
           packer.write(value.to_h)
         end,
-        unpacker: ->(unpacker) { HashWithIndifferentAccess.new(unpacker.read) },
+        unpacker: ->(unpacker) { ActiveSupport::HashWithIndifferentAccess.new(unpacker.read) },
         recursive: true,
       },
       "ActiveSupport::TimeWithZone" => {
