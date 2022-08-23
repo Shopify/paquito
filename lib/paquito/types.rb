@@ -148,8 +148,9 @@ module Paquito
       # Range => { code: 0x05 }, do not recycle that code
       "ActiveRecord::Base" => {
         code: 6,
-        packer: ->(value) { ActiveRecordPacker.dump(value) },
-        unpacker: ->(value) { ActiveRecordPacker.load(value) },
+        packer: ->(value, packer) { packer.write(ActiveRecordCoder.dump(value)) },
+        unpacker: ->(unpacker) { ActiveRecordCoder.load(unpacker.read) },
+        recursive: true,
       }.freeze,
       "ActiveSupport::HashWithIndifferentAccess" => {
         code: 7,

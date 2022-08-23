@@ -6,7 +6,9 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
   test "MessagePack factory correctly encodes AR::Base objects" do
     shop = Shop.preload(:products, :domain).first
 
-    codec = Paquito::CodecFactory.build([ActiveRecord::Base])
+    codec = Paquito::CodecFactory.build([
+      ActiveRecord::Base, Symbol, Time, DateTime, Date, BigDecimal, ActiveSupport::TimeWithZone,
+    ])
 
     assert_equal(true, shop.association(:products).loaded?)
     assert_equal(true, shop.association(:domain).loaded?)
@@ -34,7 +36,9 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
       "name\xAFCheap Snowboard\xA8quantity\x18\x92\xA7Product\x84\xA7shop_id\x01\xA2id\x02\xA4name"\
       "\xB3Expensive Snowboard\xA8quantity\x02".b
 
-    codec = Paquito::CodecFactory.build([ActiveRecord::Base])
+    codec = Paquito::CodecFactory.build([
+      ActiveRecord::Base, Symbol, Time, DateTime, Date, BigDecimal, ActiveSupport::TimeWithZone,
+    ])
     recovered_value = codec.load(payload)
 
     assert_equal(shop, recovered_value)
