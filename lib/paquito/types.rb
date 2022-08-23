@@ -4,8 +4,6 @@ require "paquito/errors"
 
 module Paquito
   module Types
-    autoload :ActiveRecordPacker, "paquito/types/active_record_packer"
-
     # Do not change those formats, this would break current codecs.
     TIME_FORMAT = "q< L<"
     TIME_WITH_ZONE_FORMAT = "q< L< a*"
