@@ -30,7 +30,7 @@ class SafeYAMLTest < PaquitoTest
     error = assert_raises(Paquito::UnpackError) do
       @coder.load("<<: *foo")
     end
-    assert_equal "Unknown alias: foo", error.message
+    assert_includes ["Unknown alias: foo", "An alias referenced an unknown anchor: foo"], error.message
 
     assert_raises Paquito::UnpackError do
       @coder.load("*>>")
