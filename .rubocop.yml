@@ -3,3 +3,6 @@ inherit_gem:
 
 AllCops:
   TargetRubyVersion: 2.6
+
+Style/ClassMethodsDefinitions:
+  Enabled: false
