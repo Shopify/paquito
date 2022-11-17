@@ -1,6 +1,6 @@
 # Paquito
 
-`Paquito` provies utility classes to define optimized and evolutive serializers.
+`Paquito` provides utility classes to define optimized and evolutive serializers.
 
 ## Installation
 
