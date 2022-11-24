@@ -62,6 +62,16 @@ coder.dump([1]) # => "\x01[1]"
 coder.load("\x00---\n:foo: 42") # => { foo: 42 }
 ```
 
+### `SingleBytePrefixVersionWithStringBypass`
+
+Works like `Paquito::SingleBytePrefixVersion` except that versions `253`, `254` and `255` are reserved for serializing strings
+in an optimized way.
+
+When the object to serialize is an `UTF-8`, `ASCII` or `BINARY` string, rather than invoking the underlying serializer, it simply
+prepends a single byte to the string which indicates the encoding.
+
+The larger the string the larger the speed gain is, e.g. for a 1MB string, it's over 500x faster than going through `MessagePack` or `Marshal`.
+
 ### `CommentPrefixVersion`
 
 Similar to the single byte prefix, but meant to be human readable and to allow for migrating unversioned payloads.
