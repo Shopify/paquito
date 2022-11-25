@@ -1,5 +1,7 @@
 # Unreleased
 
+* Introduce `SingleBytePrefixVersionWithStringBypass` (#18, #20).
+
 # 0.7.0
 
 * Make ActiveRecordCoder now encode wether records were persisted or not (#12).
