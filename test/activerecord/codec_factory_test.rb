@@ -4,9 +4,10 @@ require "test_helper"
 
 class PaquitoCodecFactoryTest < PaquitoTest
   test "correctly encodes ActiveRecord::Base objects" do
-    codec = Paquito::CodecFactory.build([ActiveRecord::Base])
+    codec = Paquito::CodecFactory.build([
+      ActiveRecord::Base, Symbol, Time, DateTime, Date, BigDecimal, ActiveSupport::TimeWithZone,
+    ])
 
-    value = Shop.new
     decoded_value = codec.load(codec.dump(value))
 
     assert_equal value.attributes, decoded_value.attributes
