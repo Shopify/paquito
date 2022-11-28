@@ -1,5 +1,7 @@
 # Unreleased
 
+* Drop the partial Ruby 2.6 support.
+
 # 0.8.0
 
 * Introduce `SingleBytePrefixVersionWithStringBypass` (#18, #20).

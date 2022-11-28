@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+gem "activerecord", ">= 7.0"
 require "paquito/errors"
 
 module Paquito

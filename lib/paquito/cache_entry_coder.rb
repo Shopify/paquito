@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+gem "activesupport", ">= 7.0"
+
 module Paquito
   module CacheEntryCoder
     def self.dump(entry)
