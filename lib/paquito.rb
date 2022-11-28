@@ -25,6 +25,7 @@ require "paquito/serialized_column"
 
 module Paquito
   autoload :CacheEntryCoder, "paquito/cache_entry_coder"
+  autoload :FlatCacheEntryCoder, "paquito/flat_cache_entry_coder"
   autoload :ActiveRecordCoder, "paquito/active_record_coder"
 
   class << self
