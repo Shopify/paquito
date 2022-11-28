@@ -1,5 +1,7 @@
 # Unreleased
 
+# 0.8.0
+
 * Introduce `SingleBytePrefixVersionWithStringBypass` (#18, #20).
 
 # 0.7.0
