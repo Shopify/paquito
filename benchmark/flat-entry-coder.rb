@@ -6,7 +6,7 @@ require "paquito"
 require "active_support"
 require "benchmark/ips"
 
-CODEC = Paquito::CodecFactory.build([])
+CODEC = Paquito::CodecFactory.build
 ORIGINAL = Paquito::SingleBytePrefixVersion.new(
   0,
   0 => Paquito.chain(
@@ -25,7 +25,6 @@ entries = {
   small_string: "Hello World!",
   bytes_1mb: Random.bytes(1_000_000),
   int_array: 1000.times.to_a,
-  str_array: 1000.times.map(&:to_s),
 }
 
 entries.each do |name, object|

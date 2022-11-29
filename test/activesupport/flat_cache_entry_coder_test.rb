@@ -11,28 +11,28 @@ class FlatPaquitoCacheEntryCoderTest < PaquitoTest
 
   def test_simple_key
     @store.write("foo", "bar")
-    assert_equal "bar", @store.read("foo")
+    assert_equal("bar", @store.read("foo"))
     entry = read_entry("foo")
-    assert_nil entry.expires_at
-    assert_nil entry.version
+    assert_nil(entry.expires_at)
+    assert_nil(entry.version)
   end
 
   def test_simple_key_with_expriry
     @store.write("foo", "bar", expires_in: 5.minutes)
 
-    assert_equal "bar", @store.read("foo")
+    assert_equal("bar", @store.read("foo"))
     entry = read_entry("foo")
-    assert_in_delta 5.minutes.from_now.to_f, entry.expires_at, 0.5
-    assert_nil entry.version
+    assert_in_delta(5.minutes.from_now.to_f, entry.expires_at, 0.5)
+    assert_nil(entry.version)
   end
 
   def test_simple_key_with_version
     @store.write("foo", "bar", version: "v1")
 
-    assert_equal "bar", @store.read("foo")
+    assert_equal("bar", @store.read("foo"))
     entry = read_entry("foo")
-    assert_nil entry.expires_at
-    assert_equal "v1", entry.version
+    assert_nil(entry.expires_at)
+    assert_equal("v1", entry.version)
   end
 
   private

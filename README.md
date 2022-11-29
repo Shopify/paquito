@@ -161,6 +161,28 @@ Example:
 ActiveSupport::Cache::FileStore.new("tmp/cache", coder: Paquito.chain(Paquito::CacheEntryCoder, JSON))
 ```
 
+### `FlatCacheEntryCoder`
+
+`Paquito::FlatCacheEntryCoder` is a variation of `Paquito::CacheEntryCoder`. Instead of encoding `ActiveSupport::Cache::Entry`
+into an Array of three members, it serializes the entry metadata itself and adds it as a prefix to the serialized payload.
+
+This allows to leverage `Paquito::SingleBytePrefixVersionWithStringBypass` effectively.
+
+Example:
+
+```ruby
+ActiveSupport::Cache::FileStore.new(
+  "tmp/cache",
+  coder: Paquito::FlatCacheEntryCoder.new(
+    Paquito::SingleBytePrefixVersionWithStringBypass.new(
+      1,
+      0 => Marshal,
+      1 => JSON,
+    )
+  )
+)
+```
+
 ### `SerializedColumn`
 
 `Paquito::SerializedColumn` allows you to decorate any encoder to behave like Rails's builtin `YAMLColumn`
