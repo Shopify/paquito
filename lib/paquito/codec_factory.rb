@@ -5,7 +5,7 @@ require "paquito/coder_chain"
 
 module Paquito
   class CodecFactory
-    def self.build(types, freeze: false, serializable_type: false, pool: 1)
+    def self.build(types = [], freeze: false, serializable_type: false, pool: 1)
       factory = if types.empty? && !serializable_type
         MessagePack::DefaultFactory
       else

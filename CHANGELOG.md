@@ -1,5 +1,6 @@
 # Unreleased
 
+* Introduce `FlatCacheEntryCoder` (#21).
 * Drop the partial Ruby 2.6 support.
 
 # 0.8.0
