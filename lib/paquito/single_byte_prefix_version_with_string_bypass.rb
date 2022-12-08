@@ -6,15 +6,20 @@ module Paquito
     BINARY_VERSION = 254
     ASCII_VERSION = 253
 
+    def initialize(current_version, coders, string_coder = nil)
+      super(current_version, coders)
+      @string_coder = string_coder
+    end
+
     def dump(object)
       if object.class == String # We don't want to match subclasses
         case object.encoding
         when Encoding::UTF_8
-          UTF8_VERSION.chr(Encoding::BINARY) << object
+          UTF8_VERSION.chr(Encoding::BINARY) << (@string_coder ? @string_coder.dump(object) : object)
         when Encoding::BINARY
-          BINARY_VERSION.chr(Encoding::BINARY) << object
+          BINARY_VERSION.chr(Encoding::BINARY) << (@string_coder ? @string_coder.dump(object) : object)
         when Encoding::US_ASCII
-          ASCII_VERSION.chr(Encoding::BINARY) << object
+          ASCII_VERSION.chr(Encoding::BINARY) << (@string_coder ? @string_coder.dump(object) : object)
         else
           super
         end
@@ -31,11 +36,14 @@ module Paquito
 
       case payload_version
       when UTF8_VERSION
-        payload.byteslice(1..-1).force_encoding(Encoding::UTF_8)
+        string = payload.byteslice(1..-1).force_encoding(Encoding::UTF_8)
+        @string_coder ? @string_coder.load(string) : string
       when BINARY_VERSION
-        payload.byteslice(1..-1).force_encoding(Encoding::BINARY)
+        string = payload.byteslice(1..-1).force_encoding(Encoding::BINARY)
+        @string_coder ? @string_coder.load(string) : string
       when ASCII_VERSION
-        payload.byteslice(1..-1).force_encoding(Encoding::US_ASCII)
+        string = payload.byteslice(1..-1).force_encoding(Encoding::US_ASCII)
+        @string_coder ? @string_coder.load(string) : string
       else
         coder = @coders.fetch(payload_version) do
           raise UnsupportedCodec, "Unsupported packer version #{payload_version}"

@@ -6,9 +6,7 @@ class PaquitoSingleBytePrefixVersionWithStringBypassTest < PaquitoTest
   def setup
     @coder = Paquito::SingleBytePrefixVersionWithStringBypass.new(
       1,
-      0 => YAML,
-      1 => JSON,
-      2 => MessagePack,
+      { 0 => YAML, 1 => JSON, 2 => MessagePack },
     )
   end
 
@@ -57,5 +55,16 @@ class PaquitoSingleBytePrefixVersionWithStringBypassTest < PaquitoTest
 
   test "ASCII version prefix is stable" do
     assert_equal "#{253.chr}foo", @coder.dump("foo".encode(Encoding::ASCII))
+  end
+
+  test "with a string_coder" do
+    @coder_with_compression = Paquito::SingleBytePrefixVersionWithStringBypass.new(
+      1,
+      { 0 => YAML, 1 => JSON, 2 => MessagePack },
+      Paquito::ConditionalCompressor.new(Zlib, 5),
+    )
+    assert_equal "#{255.chr}#{0.chr}foo".b, @coder_with_compression.dump("foo")
+    str = "AAAAAAAAAAAA"
+    assert_equal "#{255.chr}#{1.chr}#{Zlib.deflate(str)}".b, @coder_with_compression.dump(str)
   end
 end

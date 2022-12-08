@@ -70,6 +70,18 @@ in an optimized way.
 When the object to serialize is an `UTF-8`, `ASCII` or `BINARY` string, rather than invoking the underlying serializer, it simply
 prepends a single byte to the string which indicates the encoding.
 
+Additionally, you can pass a distinct serializer for strings only:
+
+Example:
+
+```ruby
+coder = Paquito::SingleBytePrefixVersion.new(
+  1,
+  { 0 => YAML, 1 => JSON },
+  Paquito::ConditionalCompressor.new(Zlib, 1024), # Large strings will be compressed but not serialized in JSON.
+)
+```
+
 The larger the string the larger the speed gain is, e.g. for a 1MB string, it's over 500x faster than going through `MessagePack` or `Marshal`.
 
 ### `CommentPrefixVersion`
