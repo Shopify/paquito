@@ -1,5 +1,8 @@
 # Unreleased
 
+# 0.9.0
+
+* Handle `compress / decompress` coders (#22)
 * Introduce `FlatCacheEntryCoder` (#21).
 * Drop the partial Ruby 2.6 support.
 
