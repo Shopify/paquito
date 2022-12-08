@@ -34,6 +34,8 @@ module Paquito
         coder
       elsif coder.respond_to?(:deflate) && coder.respond_to?(:inflate)
         Deflater.new(coder)
+      elsif coder.respond_to?(:compress) && coder.respond_to?(:decompress)
+        Compressor.new(coder)
       else
         raise TypeError, "Coders must respond to #dump and #load, #{coder.inspect} doesn't"
       end
