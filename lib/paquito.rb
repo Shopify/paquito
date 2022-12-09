@@ -10,6 +10,7 @@ require "msgpack"
 
 require "paquito/version"
 require "paquito/deflater"
+require "paquito/compressor"
 require "paquito/allow_nil"
 require "paquito/translate_errors"
 require "paquito/safe_yaml"
