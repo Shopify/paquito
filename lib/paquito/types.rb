@@ -217,7 +217,7 @@ module Paquito
           factory.register_type(
             type_attributes.fetch(:code),
             type,
-            type_attributes
+            type_attributes,
           )
         end
       end
@@ -242,7 +242,7 @@ module Paquito
 
             unpacker = CustomTypesRegistry.unpacker(klass)
             unpacker.call(payload)
-          end
+          end,
         )
       end
 

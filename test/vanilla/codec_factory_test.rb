@@ -172,7 +172,7 @@ class PaquitoCodecFactoryTest < PaquitoTest
 
     object = ObjectOne.new(
       "foo",
-      { "bar" => ObjectTwo.new("baz", "qux") }
+      { "bar" => ObjectTwo.new("baz", "qux") },
     )
     decoded = codec.load(codec.dump(object))
     assert_equal object, decoded
@@ -222,7 +222,7 @@ class PaquitoCodecFactoryTest < PaquitoTest
         datetime: DateTime.new(2000, 1, 1, 4, 5, 6, "UTC"), # rubocop:disable Style/DateTime
         date: Date.new(2000, 1, 1),
         hash: { a: [:a] },
-      )
+      ),
     )
 
     expected = {
@@ -240,7 +240,7 @@ class PaquitoCodecFactoryTest < PaquitoTest
       "\x88\xC7\x06\x00symbol\xC7\x06\x00symbol\xC7\x06\x00string\xA6string\xC7\x05\x00array\x92\xD4\x00a\xA1b" \
         "\xD6\x00time\xC7\f\x01\x1A`m8\x00\x00\x00\x00\x01\x00\x00\x00\xD7\x00datetime\xC7\x14\x02\xD0\a\x01\x01\x04" \
         "\x05\x06\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x01\xD6\x00date\xD6\x03\xD0\a\x01\x01\xC7\n\x00" \
-        "bigdecimal\xC7\n\x0427:0.123e3\xD6\x00hash\x81\xD4\x00a\x91\xD4\x00a".b
+        "bigdecimal\xC7\n\x0427:0.123e3\xD6\x00hash\x81\xD4\x00a\x91\xD4\x00a".b,
     ))
   end
 

@@ -22,7 +22,7 @@ class PaquitoCodecFactoryTest < PaquitoTest
         date: Date.new(2000, 1, 1),
         hash: { a: [:a] },
         hwia: ActiveSupport::HashWithIndifferentAccess.new("foo" => "bar"),
-      )
+      ),
     )
   end
 

@@ -1,5 +1,10 @@
 # Unreleased
 
+
+# 0.9.2
+
+* Support cast of coder in translate errors. (#24)
+
 # 0.9.1
 
 * Fix a bug when handle `compress / decompress` coders. (#23)

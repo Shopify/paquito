@@ -18,7 +18,7 @@ FLAT = Paquito::FlatCacheEntryCoder.new(
   Paquito::SingleBytePrefixVersionWithStringBypass.new(
     0,
     0 => CODEC,
-  )
+  ),
 )
 
 entries = {
