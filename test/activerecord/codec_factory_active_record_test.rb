@@ -6,7 +6,9 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
   test "MessagePack factory correctly encodes AR::Base objects" do
     shop = Shop.preload(:products, :domain).first
 
-    codec = Paquito::CodecFactory.build([ActiveRecord::Base])
+    codec = Paquito::CodecFactory.build([
+      ActiveRecord::Base, Symbol, Time, DateTime, Date, BigDecimal, ActiveSupport::TimeWithZone,
+    ])
 
     assert_equal(true, shop.association(:products).loaded?)
     assert_equal(true, shop.association(:domain).loaded?)
@@ -23,6 +25,14 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
     assert_equal(shop, codec.load(reencoded_value))
   end
 
+  test "MessagePack factory without required dependent types fails on AR::Base objects" do
+    shop = Shop.first
+
+    assert_raises(Paquito::Types::MissingDependency) do
+      Paquito::CodecFactory.build([ActiveRecord::Base])
+    end
+  end
+
   test "MessagePack factory preserves previous encoding scheme" do
     shop = Shop.preload(:products, :domain).first
 
@@ -34,7 +44,9 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
       "name\xAFCheap Snowboard\xA8quantity\x18\x92\xA7Product\x84\xA7shop_id\x01\xA2id\x02\xA4name"\
       "\xB3Expensive Snowboard\xA8quantity\x02".b
 
-    codec = Paquito::CodecFactory.build([ActiveRecord::Base])
+    codec = Paquito::CodecFactory.build([
+      ActiveRecord::Base, Symbol, Time, DateTime, Date, BigDecimal, ActiveSupport::TimeWithZone,
+    ])
     recovered_value = codec.load(payload)
 
     assert_equal(shop, recovered_value)
@@ -57,7 +69,9 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
     raw_attributes = payload.dig(1, 1)
     assert_instance_of String, raw_attributes["settings"]
 
-    codec = Paquito::CodecFactory.build([ActiveRecord::Base])
+    codec = Paquito::CodecFactory.build([
+      ActiveRecord::Base, Symbol, Time, DateTime, Date, BigDecimal, ActiveSupport::TimeWithZone,
+    ])
     reloaded_model = codec.load(codec.dump(model))
 
     assert_equal model.settings, reloaded_model.settings

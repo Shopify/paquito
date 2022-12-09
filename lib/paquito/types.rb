@@ -4,8 +4,6 @@ require "paquito/errors"
 
 module Paquito
   module Types
-    autoload :ActiveRecordPacker, "paquito/types/active_record_packer"
-
     # Do not change those formats, this would break current codecs.
     TIME_FORMAT = "q< L<"
     TIME_WITH_ZONE_FORMAT = "q< L< a*"
@@ -148,8 +146,10 @@ module Paquito
       # Range => { code: 0x05 }, do not recycle that code
       "ActiveRecord::Base" => {
         code: 6,
-        packer: ->(value) { ActiveRecordPacker.dump(value) },
-        unpacker: ->(value) { ActiveRecordPacker.load(value) },
+        packer: ->(value, packer) { packer.write(ActiveRecordCoder.dump(value)) },
+        unpacker: ->(unpacker) { ActiveRecordCoder.load(unpacker.read) },
+        recursive: true,
+        dependent_types: ["Symbol", "Time", "DateTime", "Date", "BigDecimal", "ActiveSupport::TimeWithZone"],
       }.freeze,
       "ActiveSupport::HashWithIndifferentAccess" => {
         code: 7,
@@ -205,15 +205,20 @@ module Paquito
 
     class << self
       def register(factory, types)
-        types.each do |type|
+        types_with_names = types.to_h do |type|
           # Up to Rails 7 ActiveSupport::TimeWithZone#name returns "Time"
           name = if defined?(ActiveSupport::TimeWithZone) && type == ActiveSupport::TimeWithZone
             "ActiveSupport::TimeWithZone"
           else
             type.name
           end
+          [type, name]
+        end
 
+        types_with_names.each do |type, name|
           type_attributes = TYPES.fetch(name)
+          check_dependent_types!(name, type_attributes[:dependent_types], types_with_names.values)
+
           factory.register_type(
             type_attributes.fetch(:code),
             type,
@@ -249,6 +254,19 @@ module Paquito
       def define_custom_type(klass, packer: nil, unpacker:)
         CustomTypesRegistry.register(klass, packer: packer, unpacker: unpacker)
       end
+
+      private
+
+      def check_dependent_types!(type, dependent_types, types)
+        return unless dependent_types
+
+        return if (missing_types = dependent_types - types).empty?
+
+        raise MissingDependency, "To encode #{type}, you must build with these types: #{missing_types.join(", ")}."
+      end
+    end
+
+    class MissingDependency < StandardError
     end
   end
 end
