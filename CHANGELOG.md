@@ -1,5 +1,8 @@
 # Unreleased
 
+# 0.9.1
+
+* Fix a bug when handle `compress / decompress` coders. (#23)
 * `SingleBytePrefixVersionWithStringBypass` accepts another coder for strings.
 
 # 0.9.0
