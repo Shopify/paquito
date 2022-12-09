@@ -3,7 +3,7 @@
 module Paquito
   class TranslateErrors
     def initialize(coder)
-      @coder = coder
+      @coder = Paquito.cast(coder)
     end
 
     def dump(object)

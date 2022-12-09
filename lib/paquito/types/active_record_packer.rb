@@ -15,7 +15,7 @@ module Paquito
         0x7f,
         Object,
         packer: ->(value) { raise PackError.new("undeclared type", value) },
-        unpacker: ->(*) {}
+        unpacker: ->(*) {},
       )
 
       core_types = [String, Integer, TrueClass, FalseClass, NilClass, Float, Array, Hash]
