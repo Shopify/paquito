@@ -75,7 +75,7 @@ Additionally, you can pass a distinct serializer for strings only:
 Example:
 
 ```ruby
-coder = Paquito::SingleBytePrefixVersion.new(
+coder = Paquito::SingleBytePrefixVersionWithStringBypass.new(
   1,
   { 0 => YAML, 1 => JSON },
   Paquito::ConditionalCompressor.new(Zlib, 1024), # Large strings will be compressed but not serialized in JSON.
