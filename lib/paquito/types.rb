@@ -82,7 +82,7 @@ module Paquito
       "Time" => {
         code: 1,
         packer: ->(value) do
-          rational = value.utc.to_r
+          rational = value.to_r
           [rational.numerator, rational.denominator].pack(TIME_FORMAT)
         end,
         unpacker: ->(value) do
