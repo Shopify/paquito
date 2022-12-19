@@ -25,6 +25,14 @@ class PaquitoCodecFactoryTest < PaquitoTest
     assert_equal(value, recovered_value)
   end
 
+  test "does not mutate Time objects" do
+    time = Time.at(1_671_439_400, in: "+12:30")
+    time_state = time.inspect
+    assert_equal time_state, time.inspect
+    @codec.dump(time)
+    assert_equal time_state, time.inspect
+  end
+
   test "correctly encodes DateTime objects" do
     codec = Paquito::CodecFactory.build([DateTime])
 
