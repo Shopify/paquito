@@ -12,6 +12,9 @@ module Paquito
     DATE_TIME_FORMAT = "s< C C C C q< L< c C"
     DATE_FORMAT = "s< C C"
 
+    MAX_UINT32 = (2**32) - 1
+    MAX_INT64 = (2**63) - 1
+
     SERIALIZE_METHOD = :as_pack
     SERIALIZE_PROC = SERIALIZE_METHOD.to_proc
     DESERIALIZE_METHOD = :from_pack
@@ -72,29 +75,53 @@ module Paquito
 
     # Do not change any #code, this would break current codecs.
     # New types can be added as long as they have unique #code.
-    TYPES = {
-      "Symbol" => {
+    TYPES = [
+      {
         code: 0,
+        class: "Symbol",
+        version: 0,
         packer: Symbol.method_defined?(:name) ? :name.to_proc : :to_s.to_proc,
         unpacker: :to_sym.to_proc,
         optimized_symbols_parsing: true,
       }.freeze,
-      "Time" => {
+      {
         code: 1,
+        class: "Time",
+        version: 0,
         packer: ->(value) do
           rational = value.to_r
+          if rational.numerator > MAX_INT64 || rational.denominator > MAX_UINT32
+            raise PackError, "Time instance out of bounds (#{rational.inspect}), see: https://github.com/Shopify/paquito/issues/26"
+          end
+
           [rational.numerator, rational.denominator].pack(TIME_FORMAT)
         end,
         unpacker: ->(value) do
           numerator, denominator = value.unpack(TIME_FORMAT)
-          Time.at(Rational(numerator, denominator)).utc
+          at = begin
+            Rational(numerator, denominator)
+          rescue ZeroDivisionError
+            raise UnpackError, "Corrupted Time object, see: https://github.com/Shopify/paquito/issues/26"
+          end
+          Time.at(at).utc
         end,
       }.freeze,
-      "DateTime" => {
+      {
         code: 2,
+        class: "DateTime",
+        version: 0,
         packer: ->(value) do
           sec = value.sec + value.sec_fraction
           offset = value.offset
+
+          if sec.numerator > MAX_INT64 || sec.denominator > MAX_UINT32
+            raise PackError, "DateTime#sec_fraction out of bounds (#{sec.inspect}), see: https://github.com/Shopify/paquito/issues/26"
+          end
+
+          if offset.numerator > MAX_INT64 || offset.denominator > MAX_UINT32
+            raise PackError, "DateTime#offset out of bounds (#{offset.inspect}), see: https://github.com/Shopify/paquito/issues/26"
+          end
+
           [
             value.year,
             value.month,
@@ -119,19 +146,26 @@ module Paquito
             offset_numerator,
             offset_denominator,
           ) = value.unpack(DATE_TIME_FORMAT)
-          DateTime.new( # rubocop:disable Style/DateTime
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            Rational(sec_numerator, sec_denominator),
-            Rational(offset_numerator, offset_denominator),
-          )
+
+          begin
+            DateTime.new( # rubocop:disable Style/DateTime
+              year,
+              month,
+              day,
+              hour,
+              minute,
+              Rational(sec_numerator, sec_denominator),
+              Rational(offset_numerator, offset_denominator),
+            )
+          rescue ZeroDivisionError
+            raise UnpackError, "Corrupted DateTime object, see: https://github.com/Shopify/paquito/issues/26"
+          end
         end,
       }.freeze,
-      "Date" => {
+      {
         code: 3,
+        class: "Date",
+        version: 0,
         packer: ->(value) do
           [value.year, value.month, value.day].pack(DATE_FORMAT)
         end,
@@ -140,19 +174,25 @@ module Paquito
           Date.new(year, month, day)
         end,
       }.freeze,
-      "BigDecimal" => {
+      {
         code: 4,
+        class: "BigDecimal",
+        version: 0,
         packer: :_dump,
         unpacker: BigDecimal.method(:_load),
       }.freeze,
-      # Range => { code: 0x05 }, do not recycle that code
-      "ActiveRecord::Base" => {
+      # { code: 5, class: "Range" }, do not recycle that code
+      {
         code: 6,
+        class: "ActiveRecord::Base",
+        version: 0,
         packer: ->(value) { ActiveRecordPacker.dump(value) },
         unpacker: ->(value) { ActiveRecordPacker.load(value) },
       }.freeze,
-      "ActiveSupport::HashWithIndifferentAccess" => {
+      {
         code: 7,
+        class: "ActiveSupport::HashWithIndifferentAccess",
+        version: 0,
         packer: ->(value, packer) do
           unless value.instance_of?(ActiveSupport::HashWithIndifferentAccess)
             raise PackError.new("cannot pack HashWithIndifferentClass subclass", value)
@@ -162,9 +202,11 @@ module Paquito
         end,
         unpacker: ->(unpacker) { ActiveSupport::HashWithIndifferentAccess.new(unpacker.read) },
         recursive: true,
-      },
-      "ActiveSupport::TimeWithZone" => {
+      }.freeze,
+      {
         code: 8,
+        class: "ActiveSupport::TimeWithZone",
+        version: 0,
         packer: ->(value) do
           [
             value.utc.to_i,
@@ -178,21 +220,42 @@ module Paquito
           time_zone = ::Time.find_zone(time_zone_name)
           ActiveSupport::TimeWithZone.new(time, time_zone)
         end,
-      },
-      "Set" => {
+      }.freeze,
+      {
         code: 9,
+        class: "Set",
+        version: 0,
         packer: ->(value, packer) { packer.write(value.to_a) },
         unpacker: ->(unpacker) { unpacker.read.to_set },
         recursive: true,
-      },
-      # Integer => { code: 10 }, reserved for oversized Integer
-      # Object => { code: 127 }, reserved for serializable Object type
-    }
+      }.freeze,
+      # { code: 10, class: "Integer" }, reserved for oversized Integer
+      {
+        code: 11,
+        class: "Time",
+        version: 1,
+        # Unfortunately there is no way to instantiate a Time with a #zone
+        # so we have to fallback to Marshal.
+        packer: ->(value) { Marshal.dump(value) },
+        unpacker: ->(payload) { Marshal.load(payload) },
+      }.freeze,
+      {
+        code: 12,
+        # Similarly, DateTime instance can't be manually serialized.
+        class: "DateTime",
+        version: 1,
+        packer: ->(value) { Marshal.dump(value) },
+        unpacker: ->(payload) { Marshal.load(payload) },
+      }.freeze,
+      # { code: 127, class: "Object" }, reserved for serializable Object type
+    ]
     begin
       require "msgpack/bigint"
 
-      TYPES["Integer"] = {
+      TYPES << {
         code: 10,
+        class: "Integer",
+        version: 0,
         packer: MessagePack::Bigint.method(:to_msgpack_ext),
         unpacker: MessagePack::Bigint.method(:from_msgpack_ext),
         oversized_integer_extension: true,
@@ -204,7 +267,7 @@ module Paquito
     TYPES.freeze
 
     class << self
-      def register(factory, types)
+      def register(factory, types, format_version: Paquito.format_version)
         types.each do |type|
           # Up to Rails 7 ActiveSupport::TimeWithZone#name returns "Time"
           name = if defined?(ActiveSupport::TimeWithZone) && type == ActiveSupport::TimeWithZone
@@ -213,18 +276,29 @@ module Paquito
             type.name
           end
 
-          type_attributes = TYPES.fetch(name)
-          factory.register_type(
-            type_attributes.fetch(:code),
-            type,
-            type_attributes,
-          )
+          matching_types = TYPES.select { |t| t[:class] == name }
+
+          # If multiple types are registered for the same class, the last one will be used for
+          # packing. So we sort all matching types so that the active one is registered last.
+          past_types, future_types = matching_types.partition { |t| t.fetch(:version) <= format_version }
+          if past_types.empty?
+            raise KeyError, "No type found for #{name.inspect} with format_version=#{format_version}"
+          end
+
+          past_types.sort_by! { |t| t.fetch(:version) }
+          (future_types + past_types).each do |type_attributes|
+            factory.register_type(
+              type_attributes.fetch(:code),
+              type,
+              type_attributes,
+            )
+          end
         end
       end
 
       def register_serializable_type(factory)
         factory.register_type(
-          0x7f,
+          127,
           Object,
           packer: ->(value) do
             packer = CustomTypesRegistry.packer(value)

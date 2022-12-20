@@ -29,7 +29,12 @@ module Paquito
   autoload :FlatCacheEntryCoder, "paquito/flat_cache_entry_coder"
   autoload :ActiveRecordCoder, "paquito/active_record_coder"
 
+  DEFAULT_FORMAT_VERSION = 0
+  @format_version = DEFAULT_FORMAT_VERSION
+
   class << self
+    attr_accessor :format_version
+
     def cast(coder)
       if coder.respond_to?(:load) && coder.respond_to?(:dump)
         coder
