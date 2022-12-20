@@ -6,3 +6,6 @@ AllCops:
 
 Style/ClassMethodsDefinitions:
   Enabled: false
+
+Style/DateTime:
+  Enabled: false

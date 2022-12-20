@@ -18,6 +18,25 @@ Or install it yourself as:
 
     $ gem install paquito
 
+## Upgrade process
+
+`Paquito` being a serialization library, takes extra care in always being able to deserialize payloads serialized from previous versions.
+
+However the inverse may not always be true, so when upgrading `Paquito` it is essential to first upgrade the gem without any applicative code change, so
+that all Ruby processes in production are able to read the new format.
+
+Additionally format changes can be controlled through `Paquito.format_version` that directly maps with the gem major version.
+
+For example, `paquito 0.10.0` introduce a new serialization format for `Time` and `DateTime` objects, but retain `Paquito.format_version = 0`.
+
+The upgrade process is as follows:
+
+  - Upgrade to `paquito ~> 0.10`.
+  - Fully deploy that upgrade (if multiple applications are sharing Paquito payloads it means upgrading all the applications).
+  - Set `Paquito.format_version = 1` or upgrade to `paquito ~> 1.0`.
+
+Generally speaking it's heavily recommended to carefully read the CHANGELOG and not to skip intermediary versions.
+
 ## Usage
 
 ### `chain`
