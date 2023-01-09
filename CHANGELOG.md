@@ -1,5 +1,10 @@
 # Unreleased
 
+* Introduce a new version `1` format that better handles `Time` and `DateTime` objects. It can be enabled by setting `Paquito.format_version = 1`.
+  *IMPORTANT*: If you are upgrading from previous versions, you MUST first fully deploy the new version of the gem prior to enabling the new format.
+  If you don't you may notice some `UnpackError` during the code rollout, which may be fine if you only use Paquito for ephemeral cache data.
+
+  *This new format will be the default in paquito 1.0.*
 
 # 0.9.2
 

@@ -2,93 +2,123 @@
 
 require "test_helper"
 
-class PaquitoCodecFactoryTest < PaquitoTest
-  def setup
-    @codec = Paquito::CodecFactory.build([Symbol, Time, DateTime, Date, BigDecimal])
-  end
-
-  test "all types are stable together" do
-    assert_equal(
-      "\x88\xC7\x06\x00symbol\xC7\x06\x00symbol\xC7\x06\x00string\xA6string\xC7\x05\x00array\x92\xD4\x00a\xA1b" \
-        "\xD6\x00time\xC7\f\x01\xCA\x19m8\x00\x00\x00\x00\x01\x00\x00\x00\xD7\x00datetime\xC7\f\x01\xA26m8\x00\x00" \
-        "\x00\x00\x01\x00\x00\x00\xD6\x00date\xD6\x03\xD0\a\x01\x01\xD6\x00hash\x81\xD4\x00a\x91\xD4\x00a" \
-        "\xD6\x00hwia\x81\xA3foo\xA3bar".b,
-      @codec.dump(
-        symbol: :symbol,
-        string: "string",
-        array: [:a, "b"],
-        time: Time.new(2000, 1, 1, 2, 2, 2, "+05:00").utc,
-        datetime: DateTime.new(2000, 1, 1, 4, 5, 6, "+05:00").utc, # rubocop:disable Style/DateTime
-        date: Date.new(2000, 1, 1),
-        hash: { a: [:a] },
-        hwia: ActiveSupport::HashWithIndifferentAccess.new("foo" => "bar"),
-      ),
-    )
-  end
-
-  test "payloads are forward compatible" do
-    expected = {
-      symbol: :symbol,
-      string: "string",
-      array: [:a, "b"],
-      time: Time.new(2000, 1, 1, 2, 2, 2, "+05:00").utc,
-      datetime: DateTime.new(2000, 1, 1, 4, 5, 6, "+05:00").utc, # rubocop:disable Style/DateTime
-      date: Date.new(2000, 1, 1),
-      bigdecimal: BigDecimal(123),
-      hash: { a: [:a] },
+module Paquito
+  module ActiveSupportSharedCodecFactoryTests
+    OBJECTS = {
       hwia: ActiveSupport::HashWithIndifferentAccess.new("foo" => "bar"),
+      time_with_zone: ActiveSupport::TimeWithZone.new(
+        Time.new(2000, 1, 1, 2, 2, 2, "UTC"),
+        ActiveSupport::TimeZone["Japan"],
+      ),
     }
+    TYPES = [Symbol, ActiveSupport::HashWithIndifferentAccess, ActiveSupport::TimeWithZone].freeze
+    V0_PAYLOAD = "\x82\xD6\x00hwia\xC7\t\a\x81\xA3foo\xA3bar\xC7\x0E\x00" \
+      "time_with_zone\xC7\x11\b\x1A`m8\x00\x00\x00\x00\x00\x00\x00\x00Japan".b.freeze
+    V1_PAYLOAD = "\x82\xD6\x00hwia\xC7\t\a\x81\xA3foo\xA3bar\xC7\x0E\x00" \
+      "time_with_zone\xC7\f\r\xCE8m`\x1A\x00\xA5Japan".b.freeze
 
-    assert_equal(expected, @codec.load(
-      "\x89\xC7\x06\x00symbol\xC7\x06\x00symbol\xC7\x06\x00string\xA6string\xC7\x05\x00array\x92\xD4\x00a\xA1b" \
-        "\xD6\x00time\xC7\f\x01\xCA\x19m8\x00\x00\x00\x00\x01\x00\x00\x00\xD7\x00datetime\xC7\f\x01\xA26m8\x00\x00" \
-        "\x00\x00\x01\x00\x00\x00\xD6\x00date\xD6\x03\xD0\a\x01\x01\xC7\n\x00bigdecimal\xC7\n\x0427:0.123e3\xD6\x00" \
-        "hash\x81\xD4\x00a\x91\xD4\x00a\xD6\x00hwia\x81\xA3foo\xA3bar".b,
-    ))
+    def self.included(base = nil, &block)
+      if base && !block_given?
+        base.class_eval(&@included)
+      elsif base.nil? && block_given?
+        @included = block
+      else
+        raise "Can't pass both a base and and block"
+      end
+    end
+
+    included do
+      test "correctly supports ActiveSupport::HashWithIndifferentAccess objects" do
+        hash = { 1 => ActiveSupport::HashWithIndifferentAccess.new("foo" => "bar") }
+
+        decoded_hash = @codec.load(@codec.dump(hash))
+
+        assert_equal Hash, decoded_hash.class
+        assert_equal ActiveSupport::HashWithIndifferentAccess, decoded_hash[1].class
+        assert_equal hash, decoded_hash
+        assert_equal "bar", decoded_hash[1][:foo]
+      end
+
+      test "does not support ActiveSupport::HashWithIndifferentAccess subclasses" do
+        hwia_subclass = Class.new(ActiveSupport::HashWithIndifferentAccess)
+        object = hwia_subclass.new
+
+        assert_raises(Paquito::PackError) { @codec.dump(object) }
+      end
+
+      test "loading of V0 types is stable" do
+        assert_equal(OBJECTS, @codec.load(V0_PAYLOAD))
+      end
+
+      test "loading of V1 types is stable" do
+        assert_equal(OBJECTS, @codec.load(V1_PAYLOAD))
+      end
+    end
   end
 
-  test "correctly supports ActiveSupport::HashWithIndifferentAccess objects" do
-    codec = Paquito::CodecFactory.build([ActiveSupport::HashWithIndifferentAccess])
+  class ActiveSupportCodecFactoryV0Test < PaquitoTest
+    include ActiveSupportSharedCodecFactoryTests
 
-    hash = { 1 => ActiveSupport::HashWithIndifferentAccess.new("foo" => "bar") }
+    def setup
+      @codec = Paquito::CodecFactory.build(TYPES, format_version: 0)
+    end
 
-    decoded_hash = codec.load(codec.dump(hash))
+    test "dumping of V0 types is stable" do
+      assert_equal(V0_PAYLOAD, @codec.dump(OBJECTS))
+    end
 
-    assert_equal Hash, decoded_hash.class
-    assert_equal ActiveSupport::HashWithIndifferentAccess, decoded_hash[1].class
-    assert_equal hash, decoded_hash
-    assert_equal "bar", decoded_hash[1][:foo]
+    test "correctly encodes ActiveSupport::TimeWithZone objects" do
+      utc_time = Time.utc(2000, 1, 1, 0, 0, 0, 0.5)
+      time_zone = ActiveSupport::TimeZone["Japan"]
+
+      with_env("TZ", "America/Los_Angeles") do
+        value = ActiveSupport::TimeWithZone.new(utc_time, time_zone)
+
+        encoded_value = @codec.dump(value)
+        assert_equal("\xC7\x11\b\x80Cm8\x00\x00\x00\x00\xF4\x01\x00\x00Japan".b, encoded_value)
+
+        decoded_value = @codec.load(encoded_value)
+
+        assert_instance_of(ActiveSupport::TimeWithZone, decoded_value)
+        assert_equal(utc_time, decoded_value.utc)
+        assert_equal("JST", decoded_value.zone)
+        assert_equal(500, decoded_value.nsec)
+        assert_instance_of(Time, decoded_value.utc)
+        assert_equal(value, decoded_value)
+      end
+    end
   end
 
-  test "does not support ActiveSupport::HashWithIndifferentAccess subclasses" do
-    codec = Paquito::CodecFactory.build([ActiveSupport::HashWithIndifferentAccess])
+  class ActiveSupportCodecFactoryV1Test < PaquitoTest
+    include ActiveSupportSharedCodecFactoryTests
 
-    hwia_subclass = Class.new(ActiveSupport::HashWithIndifferentAccess)
-    object = hwia_subclass.new
+    def setup
+      @codec = Paquito::CodecFactory.build(TYPES, format_version: 1)
+    end
 
-    assert_raises(Paquito::PackError) { codec.dump(object) }
-  end
+    test "dumping of V1 types is stable" do
+      assert_equal(V1_PAYLOAD, @codec.dump(OBJECTS))
+    end
 
-  test "correctly encodes ActiveSupport::TimeWithZone objects" do
-    codec = Paquito::CodecFactory.build([ActiveSupport::TimeWithZone])
+    test "correctly encodes ActiveSupport::TimeWithZone objects" do
+      utc_time = Time.utc(2000, 1, 1, 0, 0, 0, 0.5)
+      time_zone = ActiveSupport::TimeZone["Japan"]
 
-    utc_time = Time.utc(2000, 1, 1, 0, 0, 0, 0.5)
-    time_zone = ActiveSupport::TimeZone["Japan"]
+      with_env("TZ", "America/Los_Angeles") do
+        value = ActiveSupport::TimeWithZone.new(utc_time, time_zone)
 
-    with_env("TZ", "America/Los_Angeles") do
-      value = ActiveSupport::TimeWithZone.new(utc_time, time_zone)
+        encoded_value = @codec.dump(value)
+        assert_equal("\xC7\x0E\r\xCE8mC\x80\xCD\x01\xF4\xA5Japan".b, encoded_value)
 
-      encoded_value = codec.dump(value)
-      assert_equal("\xC7\x11\b\x80Cm8\x00\x00\x00\x00\xF4\x01\x00\x00Japan".b, encoded_value)
+        decoded_value = @codec.load(encoded_value)
 
-      decoded_value = codec.load(encoded_value)
-
-      assert_instance_of(ActiveSupport::TimeWithZone, decoded_value)
-      assert_equal(utc_time, decoded_value.utc)
-      assert_equal("JST", decoded_value.zone)
-      assert_equal(500, decoded_value.nsec)
-      assert_instance_of(Time, decoded_value.utc)
-      assert_equal(value, decoded_value)
+        assert_instance_of(ActiveSupport::TimeWithZone, decoded_value)
+        assert_equal(utc_time, decoded_value.utc)
+        assert_equal("JST", decoded_value.zone)
+        assert_equal(500, decoded_value.nsec)
+        assert_instance_of(Time, decoded_value.utc)
+        assert_equal(value, decoded_value)
+      end
     end
   end
 end
