@@ -4,6 +4,7 @@ module Paquito
   class CoderChain
     def initialize(*coders)
       @coders = coders.flatten.map { |c| Paquito.cast(c) }
+      @reverse_coders = @coders.reverse
     end
 
     def dump(object)
@@ -14,7 +15,7 @@ module Paquito
 
     def load(payload)
       object = payload
-      @coders.reverse_each { |c| object = c.load(object) }
+      @reverse_coders.each { |c| object = c.load(object) }
       object
     end
   end
