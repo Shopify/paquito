@@ -3,8 +3,17 @@
 module Paquito
   class SafeYAML
     ALL_SYMBOLS = [].freeze # Restricting symbols isn't really useful since symbols are no longer immortal
-    BASE_PERMITTED_CLASSNAMES = ["TrueClass", "FalseClass", "NilClass", "Numeric", "String", "Array", "Hash",
-                                 "Integer", "Float",].freeze
+    BASE_PERMITTED_CLASSNAMES = [
+      "TrueClass",
+      "FalseClass",
+      "NilClass",
+      "Numeric",
+      "String",
+      "Array",
+      "Hash",
+      "Integer",
+      "Float",
+    ].freeze
 
     def initialize(permitted_classes: [], deprecated_classes: [], aliases: false)
       permitted_classes += BASE_PERMITTED_CLASSNAMES
