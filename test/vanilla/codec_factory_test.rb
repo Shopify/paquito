@@ -8,7 +8,7 @@ module Paquito
     # However both versions can read each others fine, so it's not a problem.
     RUBY_3_0_BIG_DECIMAL = "\xC7\n\x0427:0.123e3".b.freeze
     RUBY_3_1_BIG_DECIMAL = "\xC7\t\x049:0.123e3".b.freeze
-    BIG_DECIMAL_PAYLOAD = RUBY_VERSION >= "3.1" ? RUBY_3_1_BIG_DECIMAL : RUBY_3_0_BIG_DECIMAL
+    BIG_DECIMAL_PAYLOAD = BigDecimal::VERSION >= "3.1" ? RUBY_3_1_BIG_DECIMAL : RUBY_3_0_BIG_DECIMAL
 
     OBJECTS = {
       symbol: :symbol,
@@ -106,6 +106,7 @@ module Paquito
         recovered_value = codec.load(encoded_value)
         assert_equal(value, recovered_value)
       end
+
       test "BigDecimal serialization is stable" do
         assert_equal(
           BIG_DECIMAL_PAYLOAD,
