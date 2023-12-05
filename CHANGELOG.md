@@ -1,5 +1,6 @@
 # Unreleased
 
+* Convert some lambdas into proper methods to make them more discoverable by profilers.
 * Optimize `Time` and `ActiveSupport::TimeWithZone` serializers when `active_support/core_ext/time/calculations` is loaded.
 
 # 0.10.0

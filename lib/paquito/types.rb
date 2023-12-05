@@ -75,6 +75,181 @@ module Paquito
 
     # Do not change any #code, this would break current codecs.
     # New types can be added as long as they have unique #code.
+    class << self
+      def time_pack_deprecated(value)
+        rational = value.to_r
+        if rational.numerator > MAX_INT64 || rational.denominator > MAX_UINT32
+          raise PackError, "Time instance out of bounds (#{rational.inspect}), see: https://github.com/Shopify/paquito/issues/26"
+        end
+
+        [rational.numerator, rational.denominator].pack(TIME_FORMAT)
+      end
+
+      def time_unpack_deprecated(payload)
+        numerator, denominator = payload.unpack(TIME_FORMAT)
+        at = begin
+          Rational(numerator, denominator)
+        rescue ZeroDivisionError
+          raise UnpackError, "Corrupted Time object, see: https://github.com/Shopify/paquito/issues/26"
+        end
+        Time.at(at).utc
+      end
+
+      def datetime_pack_deprecated(value)
+        sec = value.sec + value.sec_fraction
+        offset = value.offset
+
+        if sec.numerator > MAX_INT64 || sec.denominator > MAX_UINT32
+          raise PackError, "DateTime#sec_fraction out of bounds (#{sec.inspect}), see: https://github.com/Shopify/paquito/issues/26"
+        end
+
+        if offset.numerator > MAX_INT64 || offset.denominator > MAX_UINT32
+          raise PackError, "DateTime#offset out of bounds (#{offset.inspect}), see: https://github.com/Shopify/paquito/issues/26"
+        end
+
+        [
+          value.year,
+          value.month,
+          value.day,
+          value.hour,
+          value.minute,
+          sec.numerator,
+          sec.denominator,
+          offset.numerator,
+          offset.denominator,
+        ].pack(DATE_TIME_FORMAT)
+      end
+
+      def datetime_unpack_deprecated(payload)
+        (
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          sec_numerator,
+          sec_denominator,
+          offset_numerator,
+          offset_denominator,
+        ) = payload.unpack(DATE_TIME_FORMAT)
+
+        begin
+          ::DateTime.new(
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            Rational(sec_numerator, sec_denominator),
+            Rational(offset_numerator, offset_denominator),
+          )
+        rescue ZeroDivisionError
+          raise UnpackError, "Corrupted DateTime object, see: https://github.com/Shopify/paquito/issues/26"
+        end
+      end
+
+      def date_pack(value)
+        [value.year, value.month, value.day].pack(DATE_FORMAT)
+      end
+
+      def date_unpack(payload)
+        year, month, day = payload.unpack(DATE_FORMAT)
+        ::Date.new(year, month, day)
+      end
+
+      def hash_with_indifferent_access_pack(value, packer)
+        unless value.instance_of?(ActiveSupport::HashWithIndifferentAccess)
+          raise PackError.new("cannot pack HashWithIndifferentClass subclass", value)
+        end
+
+        packer.write(value.to_h)
+      end
+
+      def hash_with_indifferent_access_unpack(unpacker)
+        ActiveSupport::HashWithIndifferentAccess.new(unpacker.read)
+      end
+
+      def time_with_zone_deprecated_pack(value)
+        [
+          value.utc.to_i,
+          (value.time.sec_fraction * 1_000_000_000).to_i,
+          value.time_zone.name,
+        ].pack(TIME_WITH_ZONE_FORMAT)
+      end
+
+      def time_with_zone_deprecated_unpack(payload)
+        sec, nsec, time_zone_name = payload.unpack(TIME_WITH_ZONE_FORMAT)
+        time = Time.at(sec, nsec, :nsec, in: 0).utc
+        time_zone = ::Time.find_zone(time_zone_name)
+        ActiveSupport::TimeWithZone.new(time, time_zone)
+      end
+
+      def time_pack(value, packer)
+        packer.write(value.tv_sec)
+        packer.write(value.tv_nsec)
+        packer.write(value.utc_offset)
+      end
+
+      if ::Time.respond_to?(:at_without_coercion) # Ref: https://github.com/rails/rails/pull/50268
+        def time_unpack(unpacker)
+          ::Time.at_without_coercion(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
+        end
+      else
+        def time_unpack(unpacker)
+          ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
+        end
+      end
+
+      def datetime_pack(value, packer)
+        packer.write(value.year)
+        packer.write(value.month)
+        packer.write(value.day)
+        packer.write(value.hour)
+        packer.write(value.minute)
+
+        sec = value.sec + value.sec_fraction
+        packer.write(sec.numerator)
+        packer.write(sec.denominator)
+
+        offset = value.offset
+        packer.write(offset.numerator)
+        packer.write(offset.denominator)
+      end
+
+      def datetime_unpack(unpacker)
+        ::DateTime.new(
+          unpacker.read, # year
+          unpacker.read, # month
+          unpacker.read, # day
+          unpacker.read, # hour
+          unpacker.read, # minute
+          Rational(unpacker.read, unpacker.read), # sec fraction
+          Rational(unpacker.read, unpacker.read), # offset fraction
+        )
+      end
+
+      def time_with_zone_pack(value, packer)
+        time = value.utc
+        packer.write(time.tv_sec)
+        packer.write(time.tv_nsec)
+        packer.write(value.time_zone.name)
+      end
+
+      if ::Time.respond_to?(:at_without_coercion) # Ref: https://github.com/rails/rails/pull/50268
+        def time_with_zone_unpack(unpacker)
+          utc = ::Time.at_without_coercion(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
+          time_zone = ::Time.find_zone(unpacker.read)
+          ActiveSupport::TimeWithZone.new(utc, time_zone)
+        end
+      else
+        def time_with_zone_unpack(unpacker)
+          utc = ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
+          time_zone = ::Time.find_zone(unpacker.read)
+          ActiveSupport::TimeWithZone.new(utc, time_zone)
+        end
+      end
+    end
+
     TYPES = [
       {
         code: 0,
@@ -88,91 +263,22 @@ module Paquito
         code: 1,
         class: "Time",
         version: 0,
-        packer: ->(value) do
-          rational = value.to_r
-          if rational.numerator > MAX_INT64 || rational.denominator > MAX_UINT32
-            raise PackError, "Time instance out of bounds (#{rational.inspect}), see: https://github.com/Shopify/paquito/issues/26"
-          end
-
-          [rational.numerator, rational.denominator].pack(TIME_FORMAT)
-        end,
-        unpacker: ->(value) do
-          numerator, denominator = value.unpack(TIME_FORMAT)
-          at = begin
-            Rational(numerator, denominator)
-          rescue ZeroDivisionError
-            raise UnpackError, "Corrupted Time object, see: https://github.com/Shopify/paquito/issues/26"
-          end
-          Time.at(at).utc
-        end,
+        packer: method(:time_pack_deprecated),
+        unpacker: method(:time_unpack_deprecated),
       }.freeze,
       {
         code: 2,
         class: "DateTime",
         version: 0,
-        packer: ->(value) do
-          sec = value.sec + value.sec_fraction
-          offset = value.offset
-
-          if sec.numerator > MAX_INT64 || sec.denominator > MAX_UINT32
-            raise PackError, "DateTime#sec_fraction out of bounds (#{sec.inspect}), see: https://github.com/Shopify/paquito/issues/26"
-          end
-
-          if offset.numerator > MAX_INT64 || offset.denominator > MAX_UINT32
-            raise PackError, "DateTime#offset out of bounds (#{offset.inspect}), see: https://github.com/Shopify/paquito/issues/26"
-          end
-
-          [
-            value.year,
-            value.month,
-            value.day,
-            value.hour,
-            value.minute,
-            sec.numerator,
-            sec.denominator,
-            offset.numerator,
-            offset.denominator,
-          ].pack(DATE_TIME_FORMAT)
-        end,
-        unpacker: ->(value) do
-          (
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            sec_numerator,
-            sec_denominator,
-            offset_numerator,
-            offset_denominator,
-          ) = value.unpack(DATE_TIME_FORMAT)
-
-          begin
-            ::DateTime.new(
-              year,
-              month,
-              day,
-              hour,
-              minute,
-              Rational(sec_numerator, sec_denominator),
-              Rational(offset_numerator, offset_denominator),
-            )
-          rescue ZeroDivisionError
-            raise UnpackError, "Corrupted DateTime object, see: https://github.com/Shopify/paquito/issues/26"
-          end
-        end,
+        packer: method(:datetime_pack_deprecated),
+        unpacker: method(:datetime_unpack_deprecated),
       }.freeze,
       {
         code: 3,
         class: "Date",
         version: 0,
-        packer: ->(value) do
-          [value.year, value.month, value.day].pack(DATE_FORMAT)
-        end,
-        unpacker: ->(value) do
-          year, month, day = value.unpack(DATE_FORMAT)
-          ::Date.new(year, month, day)
-        end,
+        packer: method(:date_pack),
+        unpacker: method(:date_unpack),
       }.freeze,
       {
         code: 4,
@@ -193,33 +299,16 @@ module Paquito
         code: 7,
         class: "ActiveSupport::HashWithIndifferentAccess",
         version: 0,
-        packer: ->(value, packer) do
-          unless value.instance_of?(ActiveSupport::HashWithIndifferentAccess)
-            raise PackError.new("cannot pack HashWithIndifferentClass subclass", value)
-          end
-
-          packer.write(value.to_h)
-        end,
-        unpacker: ->(unpacker) { ActiveSupport::HashWithIndifferentAccess.new(unpacker.read) },
+        packer: method(:hash_with_indifferent_access_pack),
+        unpacker: method(:hash_with_indifferent_access_unpack),
         recursive: true,
       }.freeze,
       {
         code: 8,
         class: "ActiveSupport::TimeWithZone",
         version: 0,
-        packer: ->(value) do
-          [
-            value.utc.to_i,
-            (value.time.sec_fraction * 1_000_000_000).to_i,
-            value.time_zone.name,
-          ].pack(TIME_WITH_ZONE_FORMAT)
-        end,
-        unpacker: ->(value) do
-          sec, nsec, time_zone_name = value.unpack(TIME_WITH_ZONE_FORMAT)
-          time = Time.at(sec, nsec, :nsec, in: 0).utc
-          time_zone = ::Time.find_zone(time_zone_name)
-          ActiveSupport::TimeWithZone.new(time, time_zone)
-        end,
+        packer: method(:time_with_zone_deprecated_pack),
+        unpacker: method(:time_with_zone_deprecated_unpack),
       }.freeze,
       {
         code: 9,
@@ -235,77 +324,24 @@ module Paquito
         class: "Time",
         version: 1,
         recursive: true,
-        packer: ->(value, packer) do
-          packer.write(value.tv_sec)
-          packer.write(value.tv_nsec)
-          packer.write(value.utc_offset)
-        end,
-        unpacker: if ::Time.respond_to?(:at_without_coercion) # Ref: https://github.com/rails/rails/pull/50268
-                    ->(unpacker) do
-                      ::Time.at_without_coercion(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
-                    end
-                  else
-                    ->(unpacker) do
-                      ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
-                    end
-                  end,
+        packer: method(:time_pack),
+        unpacker: method(:time_unpack),
       }.freeze,
       {
         code: 12,
         class: "DateTime",
         version: 1,
         recursive: true,
-        packer: ->(value, packer) do
-          packer.write(value.year)
-          packer.write(value.month)
-          packer.write(value.day)
-          packer.write(value.hour)
-          packer.write(value.minute)
-
-          sec = value.sec + value.sec_fraction
-          packer.write(sec.numerator)
-          packer.write(sec.denominator)
-
-          offset = value.offset
-          packer.write(offset.numerator)
-          packer.write(offset.denominator)
-        end,
-        unpacker: ->(unpacker) do
-          ::DateTime.new(
-            unpacker.read, # year
-            unpacker.read, # month
-            unpacker.read, # day
-            unpacker.read, # hour
-            unpacker.read, # minute
-            Rational(unpacker.read, unpacker.read), # sec fraction
-            Rational(unpacker.read, unpacker.read), # offset fraction
-          )
-        end,
+        packer: method(:datetime_pack),
+        unpacker: method(:datetime_unpack),
       }.freeze,
       {
         code: 13,
         class: "ActiveSupport::TimeWithZone",
         version: 1,
         recursive: true,
-        packer: ->(value, packer) do
-          time = value.utc
-          packer.write(time.tv_sec)
-          packer.write(time.tv_nsec)
-          packer.write(value.time_zone.name)
-        end,
-        unpacker: if ::Time.respond_to?(:at_without_coercion) # Ref: https://github.com/rails/rails/pull/50268
-                    ->(unpacker) do
-                      utc = ::Time.at_without_coercion(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
-                      time_zone = ::Time.find_zone(unpacker.read)
-                      ActiveSupport::TimeWithZone.new(utc, time_zone)
-                    end
-                  else
-                    ->(unpacker) do
-                      utc = ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
-                      time_zone = ::Time.find_zone(unpacker.read)
-                      ActiveSupport::TimeWithZone.new(utc, time_zone)
-                    end
-                  end,
+        packer: method(:time_with_zone_pack),
+        unpacker: method(:time_with_zone_unpack),
       }.freeze,
       # { code: 127, class: "Object" }, reserved for serializable Object type
     ]
