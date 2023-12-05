@@ -240,9 +240,15 @@ module Paquito
           packer.write(value.tv_nsec)
           packer.write(value.utc_offset)
         end,
-        unpacker: ->(unpacker) do
-          ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
-        end,
+        unpacker: if ::Time.respond_to?(:at_without_coercion) # Ref: https://github.com/rails/rails/pull/50268
+                    ->(unpacker) do
+                      ::Time.at_without_coercion(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
+                    end
+                  else
+                    ->(unpacker) do
+                      ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: unpacker.read)
+                    end
+                  end,
       }.freeze,
       {
         code: 12,
@@ -287,11 +293,19 @@ module Paquito
           packer.write(time.tv_nsec)
           packer.write(value.time_zone.name)
         end,
-        unpacker: ->(unpacker) do
-          utc = ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
-          time_zone = ::Time.find_zone(unpacker.read)
-          ActiveSupport::TimeWithZone.new(utc, time_zone)
-        end,
+        unpacker: if ::Time.respond_to?(:at_without_coercion) # Ref: https://github.com/rails/rails/pull/50268
+                    ->(unpacker) do
+                      utc = ::Time.at_without_coercion(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
+                      time_zone = ::Time.find_zone(unpacker.read)
+                      ActiveSupport::TimeWithZone.new(utc, time_zone)
+                    end
+                  else
+                    ->(unpacker) do
+                      utc = ::Time.at(unpacker.read, unpacker.read, :nanosecond, in: "UTC")
+                      time_zone = ::Time.find_zone(unpacker.read)
+                      ActiveSupport::TimeWithZone.new(utc, time_zone)
+                    end
+                  end,
       }.freeze,
       # { code: 127, class: "Object" }, reserved for serializable Object type
     ]
