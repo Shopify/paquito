@@ -1,5 +1,7 @@
 # Unreleased
 
+* Optimize `Time` and `ActiveSupport::TimeWithZone` serializers when `active_support/core_ext/time/calculations` is loaded.
+
 # 0.10.0
 
 * Introduce a new version `1` format that better handles `Time` and `DateTime` objects. It can be enabled by setting `Paquito.format_version = 1`.
