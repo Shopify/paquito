@@ -159,7 +159,7 @@ coder.load(coder.dump(%i(foo bar).to_set)) # => #<Set: {:foo, :bar}>
 ### `TypedStruct`
 
 `Paquito::TypedStruct` is a opt-in Sorbet runtime plugin that allows `T::Struct` classes to be serializable. You need
-to explicitly include the module in the `T::Struct` classes that you will be serializing.
+to explicitly include the module in the `T::Struct` classes that you will be serializing. Also, Paquito must be added after Sorbet in your Gemfile for this constant to be available.
 
 Example
 
