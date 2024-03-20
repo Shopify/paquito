@@ -45,6 +45,12 @@ class PaquitoSingleBytePrefixVersionWithStringBypassTest < PaquitoTest
     assert_equal Encoding::US_ASCII, ascii_str.encoding
   end
 
+  test "supports multi-byte UTF-8" do
+    utf8_str = "本"
+    roundtrip = @coder.load(@coder.dump(utf8_str))
+    assert_equal utf8_str, roundtrip
+  end
+
   test "UTF8 version prefix is stable" do
     assert_equal "#{255.chr}foo", @coder.dump("foo")
   end

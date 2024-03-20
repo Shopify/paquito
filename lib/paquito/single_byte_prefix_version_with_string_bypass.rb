@@ -15,7 +15,7 @@ module Paquito
       if object.class == String # We don't want to match subclasses
         case object.encoding
         when Encoding::UTF_8
-          UTF8_VERSION.chr(Encoding::BINARY) << (@string_coder ? @string_coder.dump(object) : object)
+          UTF8_VERSION.chr(Encoding::BINARY) << (@string_coder ? @string_coder.dump(object) : object.b)
         when Encoding::BINARY
           BINARY_VERSION.chr(Encoding::BINARY) << (@string_coder ? @string_coder.dump(object) : object)
         when Encoding::US_ASCII

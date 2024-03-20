@@ -1,5 +1,7 @@
 # Unreleased
 
+* Fix SingleBytePrefixVersionWithStringBypass to better support raw UTF-8 strings.
+
 # 0.11.0
 
 * Convert some lambdas into proper methods to make them more discoverable by profilers.
