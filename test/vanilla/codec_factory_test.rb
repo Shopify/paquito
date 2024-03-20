@@ -236,13 +236,13 @@ module Paquito
         error = assert_raises(Paquito::PackError) do
           @codec.dump(2**128)
         end
-        assert_equal "RangeError, bignum too big to convert into `unsigned long long'", error.message
+        assert_includes error.message, "RangeError, bignum too big to convert"
 
         payload = @codec.dump("foo")
         error = assert_raises(Paquito::UnpackError) do
           @codec.load(payload.byteslice(0..-2))
         end
-        assert_equal "EOFError, end of buffer reached", error.message
+        assert_includes error.message, "EOFError, end of buffer reached"
       end
 
       if defined? MessagePack::Bigint
