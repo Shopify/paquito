@@ -1,5 +1,7 @@
 # Unreleased
 
+# 0.11.1
+
 * Fix SingleBytePrefixVersionWithStringBypass to better support raw UTF-8 strings.
 
 # 0.11.0
