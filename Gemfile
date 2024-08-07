@@ -8,7 +8,7 @@ gemspec
 gem "rake", "~> 13.0"
 gem "activesupport", ">= 7"
 gem "activerecord", ">= 7"
-gem "sqlite3"
+gem "sqlite3", "< 2" # Until we upgrade to activerecord 7.2
 gem "benchmark-ips"
 
 gem "minitest", "~> 5.0"

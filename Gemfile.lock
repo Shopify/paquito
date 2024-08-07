@@ -76,7 +76,7 @@ DEPENDENCIES
   rubocop
   rubocop-shopify (~> 2.0)
   sorbet-runtime
-  sqlite3
+  sqlite3 (< 2)
 
 BUNDLED WITH
    2.5.7
