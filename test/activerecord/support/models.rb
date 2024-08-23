@@ -55,7 +55,7 @@ class Shop < ActiveRecord::Base
   has_many :shop_features
   has_many :current_features, class_name: "Feature", through: :shop_features, source: :feature
 
-  serialize :settings, Paquito::SerializedColumn.new(
+  serialize :settings, coder: Paquito::SerializedColumn.new(
     Paquito::CommentPrefixVersion.new(
       1,
       0 => YAML,
