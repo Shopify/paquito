@@ -3,6 +3,7 @@
 require "paquito/errors"
 
 begin
+  require "active_support"
   require "active_support/core_ext/time/calculations"
 rescue LoadError
   # We don't actually depend on ActiveSupport, we just want to use
