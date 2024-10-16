@@ -2,6 +2,14 @@
 
 require "paquito/errors"
 
+begin
+  require "active_support/core_ext/time/calculations"
+rescue LoadError
+  # We don't actually depend on ActiveSupport, we just want to use
+  # Time.at_without_coercion if it's available. Otherwise, we'll just use
+  # Time.at and ignore this error.
+end
+
 module Paquito
   module Types
     autoload :ActiveRecordPacker, "paquito/types/active_record_packer"
