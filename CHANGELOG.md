@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.11.2
+
+* Attempt to load `active_support/core_ext/time/calculations` before `Paquito::Types.time_unpack` is defined (#47)
+
 # 0.11.1
 
 * Fix SingleBytePrefixVersionWithStringBypass to better support raw UTF-8 strings.
