@@ -39,7 +39,10 @@ module Paquito
           payload = instances.push(record)
 
           cached_associations = record.class.reflect_on_all_associations.select do |reflection|
-            record.association_cached?(reflection.name)
+            if record.association_cached?(reflection.name)
+              association = record.association(reflection.name)
+              association.loaded? || association.target.present?
+            end
           end
 
           unless cached_associations.empty?

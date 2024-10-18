@@ -35,6 +35,17 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
     assert_equal shop.products.first, recovered_value.products.first
   end
 
+  test "encodes associations with only unpersisted records" do
+    shop = Shop.find_by!(name: "Snow Devil")
+    product = shop.products.build(name: "My Super Product")
+
+    encoded_value = @codec.dump(shop)
+    recovered_value = @codec.load(encoded_value)
+
+    refute_nil recovered_product = recovered_value.products.first
+    assert_equal "My Super Product", recovered_product.name
+  end
+
   test "encodes wether the record was persisted or not" do
     shop = Shop.find_by!(name: "Snow Devil")
     assert_predicate shop, :persisted?
