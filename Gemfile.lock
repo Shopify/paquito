@@ -47,8 +47,7 @@ GEM
     rainbow (3.1.1)
     rake (13.0.6)
     regexp_parser (2.9.0)
-    rexml (3.3.6)
-      strscan
+    rexml (3.3.9)
     rubocop (1.62.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
@@ -69,7 +68,6 @@ GEM
     sorbet-runtime (0.5.10712)
     sqlite3 (2.0.4-arm64-darwin)
     sqlite3 (2.0.4-x86_64-linux-gnu)
-    strscan (3.1.0)
     timeout (0.4.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
