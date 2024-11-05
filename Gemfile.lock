@@ -65,7 +65,7 @@ GEM
       rubocop (~> 1.44)
     ruby-progressbar (1.13.0)
     securerandom (0.3.1)
-    sorbet-runtime (0.5.10712)
+    sorbet-runtime (0.5.11633)
     sqlite3 (2.0.4-arm64-darwin)
     sqlite3 (2.0.4-x86_64-linux-gnu)
     timeout (0.4.1)
