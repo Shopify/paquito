@@ -23,10 +23,10 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
     assert_equal(shop, codec.load(reencoded_value))
   end
 
-  test "MessagePack factory preserves previous encoding scheme" do
+  test "MessagePack factory supports legacy encoding scheme without columns hash" do
     shop = Shop.preload(:products, :domain).first
 
-    payload = "\xC8\x01\x1A\x06\x95\x92\x00\x92\x92\xC7\x06\x00domain\x92\x01\x91\x92\xD6\x00"\
+    payload_without_columns_hash = "\xC8\x01\x1A\x06\x95\x92\x00\x92\x92\xC7\x06\x00domain\x92\x01\x91\x92\xD6\x00"\
       "shop\x00\x92\xD7\x00products\x92\x92\x02\x91\x92\xD6\x00shop\x00\x92\x03\x91\x92\xD6\x00"\
       "shop\x00\x92\xA4Shop\x84\xA2id\x01\xA4name\xAASnow Devil\xA8settings\xC4\x18#\xE2\x98\xA0"\
       "1\xE2\x98\xA2\n\x81\xD7\x00currency\xA3\xE2\x82\xAC\xA8owner_id\xC0\x92\xA6Domain\x83\xA7"\
@@ -35,7 +35,7 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
       "\xB3Expensive Snowboard\xA8quantity\x02".b
 
     codec = Paquito::CodecFactory.build([ActiveRecord::Base])
-    recovered_value = codec.load(payload)
+    recovered_value = codec.load(payload_without_columns_hash)
 
     assert_equal(shop, recovered_value)
 
@@ -44,7 +44,17 @@ class PaquitoCodecFactoryActiveRecordTest < PaquitoTest
 
     encoded_value = codec.dump(shop)
 
-    assert_equal(payload, encoded_value)
+    assert_equal(shop, codec.load(encoded_value))
+
+    payload_with_columns_hash = "\xC8\x01\x1E\x06\x95\x92\x00\x92\x92\xC7\x06\x00domain\x92\x01\x91\x92\xD6\x00"\
+      "shop\x00\x92\xD7\x00products\x92\x92\x02\x91\x92\xD6\x00shop\x00\x92\x03\x91\x92\xD6\x00shop\x00"\
+      "\x93\xA4Shop\x84\xA2id\x01\xA4name\xAASnow Devil\xA8settings\xC4\x18#\xE2\x98\xA01\xE2\x98\xA2"\
+      "\n\x81\xD7\x00currency\xA3\xE2\x82\xAC\xA8owner_id\xC0\xC2\x93\xA6Domain\x83\xA7shop_id\x01\xA2id"\
+      "\x01\xA4name\xABexample.com\xC2\x93\xA7Product\x84\xA7shop_id\x01\xA2id\x01\xA4name\xAFCheap Snowboard"\
+      "\xA8quantity\x18\xC2\x93\xA7Product\x84\xA7shop_id\x01\xA2id\x02\xA4name\xB3Expensive Snowboard\xA8"\
+      "quantity\x02\xC2".b
+
+    assert_equal(payload_with_columns_hash, encoded_value)
   end
 
   test "MessagePack factory handles serialized records with more elements" do

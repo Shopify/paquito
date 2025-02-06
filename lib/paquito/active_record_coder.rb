@@ -88,9 +88,7 @@ module Paquito
       end
 
       def serialize_record(record)
-        arguments = [record.class.name, attributes_for_database(record)]
-        arguments << true if record.new_record?
-        arguments
+        [record.class.name, attributes_for_database(record), record.new_record?]
       end
 
       def attributes_for_database(record)
