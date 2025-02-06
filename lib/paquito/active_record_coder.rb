@@ -88,7 +88,12 @@ module Paquito
       end
 
       def serialize_record(record)
-        [record.class.name, attributes_for_database(record), record.new_record?]
+        [
+          record.class.name,
+          attributes_for_database(record),
+          record.new_record?,
+          columns_digest(record.class),
+        ]
       end
 
       def attributes_for_database(record)
@@ -97,17 +102,27 @@ module Paquito
         attributes
       end
 
-      def deserialize_record(class_name, attributes_from_database, new_record = false, *)
+      def deserialize_record(class_name, attributes_from_database, new_record = false, hash = nil, *)
         begin
           klass = Object.const_get(class_name)
         rescue NameError
           raise ClassMissingError, "undefined class: #{class_name}"
         end
 
+        if hash && (hash != (expected_digest = columns_digest(klass)))
+          raise ColumnsDigestMismatch,
+            "\"#{hash}\" does not match the expected digest of \"#{expected_digest}\""
+        end
+
         # Ideally we'd like to call `klass.instantiate`, however it doesn't allow to pass
         # wether the record was persisted or not.
         attributes = klass.attributes_builder.build_from_database(attributes_from_database, EMPTY_HASH)
         klass.allocate.init_with_attributes(attributes, new_record)
+      end
+
+      def columns_digest(klass)
+        str = klass.columns_hash.map { |name, column| [name, column.sql_type].join(":") }.join(",")
+        ::Digest::MD5.digest(str).unpack1("s")
       end
     end
 
@@ -118,6 +133,9 @@ module Paquito
     end
 
     class AssociationMissingError < Error
+    end
+
+    class ColumnsDigestMismatch < Error
     end
 
     class InstanceTracker
