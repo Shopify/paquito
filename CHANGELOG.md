@@ -1,3 +1,9 @@
+# Unreleased
+
+BREAKING CHANGE: ensure you have updated and deployed 0.11.3 before upgrading.
+
+* Store md5 digest of columns + sql types along with records (#51)
+
 # 0.11.3
 
 * Deserialize records with extra unused array elements in payload (#52)
