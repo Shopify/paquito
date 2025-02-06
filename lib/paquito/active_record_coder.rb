@@ -99,7 +99,7 @@ module Paquito
         attributes
       end
 
-      def deserialize_record(class_name, attributes_from_database, new_record = false)
+      def deserialize_record(class_name, attributes_from_database, new_record = false, *)
         begin
           klass = Object.const_get(class_name)
         rescue NameError
