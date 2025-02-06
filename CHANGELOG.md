@@ -2,6 +2,7 @@
 
 # 0.11.2
 
+* Deserialize records with extra unused array elements in payload (#52)
 * Attempt to load `active_support/core_ext/time/calculations` before `Paquito::Types.time_unpack` is defined (#47)
 
 # 0.11.1
