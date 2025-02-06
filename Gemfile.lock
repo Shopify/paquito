@@ -37,6 +37,7 @@ GEM
     json (2.7.1)
     language_server-protocol (3.17.0.3)
     logger (1.6.0)
+    mini_portile2 (2.8.8)
     minitest (5.25.1)
     msgpack (1.7.2)
     parallel (1.24.0)
@@ -66,14 +67,15 @@ GEM
     ruby-progressbar (1.13.0)
     securerandom (0.3.1)
     sorbet-runtime (0.5.11633)
-    sqlite3 (2.0.4-arm64-darwin)
-    sqlite3 (2.0.4-x86_64-linux-gnu)
+    sqlite3 (2.0.4)
+      mini_portile2 (~> 2.8.0)
     timeout (0.4.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
 
 PLATFORMS
+  aarch64-linux
   arm64-darwin
   x86_64-linux
 
