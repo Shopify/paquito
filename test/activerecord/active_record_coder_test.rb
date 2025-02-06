@@ -82,6 +82,32 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
     assert_equal "undefined association: foo", error.message
   end
 
+  test "raises ColumnsDigestMismatch if columns hash digest does not match" do
+    shop = Shop.find_by!(name: "Snow Devil")
+
+    hash_data = "id:INTEGER,name:varchar,settings:BLOB,owner_id:INTEGER"
+    correct_hash = ::Digest::MD5.digest(hash_data).unpack1("s")
+    serial = [
+      [0],
+      ["Shop", shop.attributes_for_database, false, correct_hash],
+    ]
+
+    assert_equal(shop, @codec.load(serial))
+
+    incorrect_hash = 10
+    serial = [
+      [0],
+      ["Shop", shop.attributes_for_database, false, incorrect_hash],
+    ]
+    error = assert_raises(Paquito::ActiveRecordCoder::ColumnsDigestMismatch) do
+      @codec.load(serial)
+    end
+    assert_equal(
+      "\"#{incorrect_hash}\" does not match the expected digest of \"#{correct_hash}\"",
+      error.message,
+    )
+  end
+
   test "works with json column with symbol keys assigned" do
     extension = Extension.new(executable: { a: "b" })
     codec_reloaded = @codec.load(@codec.dump(extension))
