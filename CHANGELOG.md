@@ -1,8 +1,9 @@
 # 1.0.0
 
-BREAKING CHANGE: ensure you have updated and deployed 0.11.3 before upgrading.
-
 * Store md5 digest of columns + sql types along with records (#51)
+  *IMPORTANT*: ensure you have updated and deployed 0.11.3 before upgrading, and ensure you are handling either
+  all `ActiveRecordCoder::Error` errors, or that you explicitly add `ActiveRecordCoder::ColumnsDigestMismatch`
+  to your error handling.
 
 # 0.11.3
 
