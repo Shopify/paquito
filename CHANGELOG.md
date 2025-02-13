@@ -1,4 +1,4 @@
-# Unreleased
+# 1.0.0
 
 BREAKING CHANGE: ensure you have updated and deployed 0.11.3 before upgrading.
 
