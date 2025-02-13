@@ -71,7 +71,7 @@ module Paquito
 
         value = Time.at(Rational(1_486_570_508_539_759, 1_000_000)).utc
         encoded_value = codec.dump(value)
-        assert_equal("\xC7\f\x01oW\x18+\aH\x05\x00@B\x0F\x00".b, encoded_value)
+        assert_equal("\xC7\v\v\xCEX\x9BD\f\xCE ,\x11\x98\x00".b, encoded_value)
         recovered_value = codec.load(encoded_value)
         assert_equal(value.nsec, recovered_value.nsec)
         assert_equal(value, recovered_value)
@@ -90,7 +90,7 @@ module Paquito
 
         value = DateTime.new(2017, 2, 8, 11, 25, 12.571685, "EST")
         encoded_value = codec.dump(value)
-        assert_equal("\xC7\x14\x02\xE1\a\x02\b\v\x19\xA1]&\x00\x00\x00\x00\x00@\r\x03\x00\xFB\x18".b, encoded_value)
+        assert_equal("\xC7\x13\f\xCD\a\xE1\x02\b\v\x19\xCE\x00&]\xA1\xCE\x00\x03\r@\xFB\x18".b, encoded_value)
         assert_equal(value, codec.load(encoded_value))
 
         now = DateTime.now

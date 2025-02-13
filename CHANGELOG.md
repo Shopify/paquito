@@ -1,9 +1,16 @@
 # 1.0.0
 
+Both changes in this release require applications to be fully updated to the latest patch version of the gem before
+bumping to this version.
+
 * Store md5 digest of columns + sql types along with records (#51)
-  *IMPORTANT*: ensure you have updated and deployed 0.11.3 before upgrading, and ensure you are handling either
-  all `ActiveRecordCoder::Error` errors, or that you explicitly add `ActiveRecordCoder::ColumnsDigestMismatch`
-  to your error handling.
+  *IMPORTANT*: if you are storing Active Record objects in the cache, ensure you have updated and deployed 0.11.3 before
+  upgrading, and ensure you are handling either all `ActiveRecordCoder::Error` errors, or that you explicitly add
+  `ActiveRecordCoder::ColumnsDigestMismatch` to your error handling.
+* Bump `Paquito.format_version` to `1` by default.
+  *IMPORTANT*: if you are upgrading from a previous version, you MUST first fully deploy the gem up to at least version 0.10.0
+  and release before enabling it. If you don't, you may notice some `UnpackError` during the code rollout, which may be fine
+  if you only use Paquito for ephemeral cache data. See release notes for v0.10.0.
 
 # 0.11.3
 
