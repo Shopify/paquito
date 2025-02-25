@@ -29,7 +29,7 @@ module Paquito
   autoload :FlatCacheEntryCoder, "paquito/flat_cache_entry_coder"
   autoload :ActiveRecordCoder, "paquito/active_record_coder"
 
-  DEFAULT_FORMAT_VERSION = 0
+  DEFAULT_FORMAT_VERSION = 1
   @format_version = DEFAULT_FORMAT_VERSION
 
   class << self

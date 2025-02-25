@@ -19,6 +19,14 @@ Gem::Specification.new do |spec|
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/Shopify/paquito"
 
+  spec.post_install_message = <<~POST_INSTALL_MSG
+    Warning: Paquito 1.0 includes potentially breaking changes to ActiveRecordCoder.
+    Before upgrading to 1.0 from an earlier version, ensure you have first upgraded
+    to 0.11.3 and deployed your application before upgrading to 1.0. Also ensure you
+    rescue either all `ActiveRecordCoder::Error` errors, or that you explicitly
+    rescue the new `ActiveRecord::ColumnsDigestError`.
+  POST_INSTALL_MSG
+
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
