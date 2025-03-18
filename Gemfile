@@ -18,3 +18,5 @@ gem "rubocop-shopify", "~> 2.0", require: false
 gem "byebug"
 
 gem "sorbet-runtime"
+gem "debug", require: "debug/prelude"
+gem "pry", require: false

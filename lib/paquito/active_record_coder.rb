@@ -81,10 +81,25 @@ module Paquito
             deserialize_associations(serialized_target, instances)
           end
 
-          association.target = target
+          if target_matches_reflection_class_name?(target, association)
+            association.target = target
+          end
         end
 
         record
+      end
+
+      def target_matches_reflection_class_name?(target, association)
+        reflection_class_name = association.reflection.class_name
+        return true if target.nil?
+        return true if target.is_a?(Array) && reflection_class_name == target.first.class.name
+
+        # Maybe need to handle:
+        # - polymorphic associations
+        # - has_x through associations
+        # - STI
+        # - Maybe collections with different classes
+        reflection_class_name == target.class.name
       end
 
       def serialize_record(record)
