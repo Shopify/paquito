@@ -121,7 +121,11 @@ module Paquito
       end
 
       def columns_digest(klass)
-        str = klass.columns_hash.map { |name, column| [name, column.sql_type].join(":") }.join(",")
+        str = +""
+        klass.columns_hash.each do |name, column|
+          str << "," unless str.empty?
+          str << name << ":" << column.sql_type
+        end
         ::Digest::MD5.digest(str).unpack1("s")
       end
     end
