@@ -135,9 +135,17 @@ module Paquito
 
         value = BigDecimal("123456789123456789.123456789123456789")
         encoded_value = codec.dump(value)
-        assert_equal("\xC7,\x0445:0.123456789123456789123456789123456789e18".b, encoded_value)
+
+        # BigDecimal#_dump precision prefix varies across BigDecimal versions.
+        bigdecimal_dump = value._dump(0)
+        assert_equal("\xC7#{[bigdecimal_dump.bytesize].pack("C")}\x04#{bigdecimal_dump}".b, encoded_value)
+
         recovered_value = codec.load(encoded_value)
         assert_equal(value, recovered_value)
+
+        # Both old and new precision prefixes can be loaded correctly.
+        assert_equal(value, codec.load("\xC7,\x0445:0.123456789123456789123456789123456789e18".b))
+        assert_equal(value, codec.load("\xC7,\x0436:0.123456789123456789123456789123456789e18".b))
       end
 
       test "correctly encodes Set objects" do
