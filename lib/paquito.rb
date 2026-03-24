@@ -56,3 +56,11 @@ module Paquito
     end
   end
 end
+
+if defined? ActiveSupport
+  ActiveSupport.on_load(:active_record) do
+    require "paquito/columns_digest_cache"
+
+    include Paquito::ColumnsDigestCache
+  end
+end
