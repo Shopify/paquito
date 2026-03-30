@@ -405,13 +405,13 @@ module Paquito
         factory.register_type(
           127,
           Object,
-          packer: ->(value) do
-            packer = CustomTypesRegistry.packer(value)
+          packer: ->(value, packer) do
+            as_pack = CustomTypesRegistry.packer(value)
             class_name = value.class.to_s
-            factory.dump([packer.call(value), class_name])
+            packer.write([as_pack.call(value), class_name])
           end,
-          unpacker: ->(value) do
-            payload, class_name = factory.load(value)
+          unpacker: ->(unpacker) do
+            payload, class_name = unpacker.read
 
             begin
               klass = Object.const_get(class_name)
@@ -419,9 +419,10 @@ module Paquito
               raise ClassMissingError, "missing #{class_name} class"
             end
 
-            unpacker = CustomTypesRegistry.unpacker(klass)
-            unpacker.call(payload)
+            from_pack = CustomTypesRegistry.unpacker(klass)
+            from_pack.call(payload)
           end,
+          recursive: true,
         )
       end
 
