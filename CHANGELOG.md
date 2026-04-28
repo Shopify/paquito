@@ -1,6 +1,6 @@
 # Changelog
 
-# Unreleased
+# 1.0.2
 
 * Cache columns_digest so that its only computed once per record class. (#65)
 * Use `recursive` for custom types. (#66)
