@@ -22,6 +22,15 @@ module Paquito
         deserialize_associations(serialized_associations, instances)
       end
 
+      def columns_digest(klass)
+        str = +""
+        klass.columns_hash.each do |name, column|
+          str << "," unless str.empty?
+          str << name << ":" << column.sql_type
+        end
+        ::Digest::MD5.digest(str).unpack1("s")
+      end
+
       private
 
       # Records without associations, or which have already been visited before,
@@ -92,7 +101,7 @@ module Paquito
           record.class.name,
           attributes_for_database(record),
           record.new_record?,
-          columns_digest(record.class),
+          record.class.paquito_columns_digest,
         ]
       end
 
@@ -109,7 +118,7 @@ module Paquito
           raise ClassMissingError, "undefined class: #{class_name}"
         end
 
-        if hash && (hash != (expected_digest = columns_digest(klass)))
+        if hash && (hash != (expected_digest = klass.paquito_columns_digest))
           raise ColumnsDigestMismatch,
             "\"#{hash}\" does not match the expected digest of \"#{expected_digest}\""
         end
@@ -118,15 +127,6 @@ module Paquito
         # wether the record was persisted or not.
         attributes = klass.attributes_builder.build_from_database(attributes_from_database, EMPTY_HASH)
         klass.allocate.init_with_attributes(attributes, new_record)
-      end
-
-      def columns_digest(klass)
-        str = +""
-        klass.columns_hash.each do |name, column|
-          str << "," unless str.empty?
-          str << name << ":" << column.sql_type
-        end
-        ::Digest::MD5.digest(str).unpack1("s")
       end
     end
 
