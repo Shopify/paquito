@@ -1,3 +1,14 @@
+# Changelog
+
+# 1.0.2
+
+* Cache columns_digest so that its only computed once per record class. (#65)
+* Use `recursive` for custom types. (#66)
+
+# 1.0.1
+
+* Avoid extra allocations in columns_digest. (#62)
+
 # 1.0.0
 
 Both changes in this release require applications to be fully updated to the latest patch version of the gem before
