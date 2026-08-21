@@ -61,6 +61,10 @@ if defined? ActiveSupport
   ActiveSupport.on_load(:active_record) do
     require "paquito/columns_digest_cache"
 
-    include Paquito::ColumnsDigestCache
+    if defined?(ActiveRecord::ModelSchema::SchemaContext)
+      ActiveRecord::ModelSchema::SchemaContext.prepend(Paquito::SchemaContextColumnsDigestCache)
+    else
+      include Paquito::ColumnsDigestCache
+    end
   end
 end

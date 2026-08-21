@@ -22,9 +22,9 @@ module Paquito
         deserialize_associations(serialized_associations, instances)
       end
 
-      def columns_digest(klass)
+      def columns_digest(schema)
         str = +""
-        klass.columns_hash.each do |name, column|
+        schema.columns_hash.each do |name, column|
           str << "," unless str.empty?
           str << name << ":" << column.sql_type
         end
@@ -101,7 +101,7 @@ module Paquito
           record.class.name,
           attributes_for_database(record),
           record.new_record?,
-          record.class.paquito_columns_digest,
+          columns_digest_for(record.class),
         ]
       end
 
@@ -118,7 +118,7 @@ module Paquito
           raise ClassMissingError, "undefined class: #{class_name}"
         end
 
-        if hash && (hash != (expected_digest = klass.paquito_columns_digest))
+        if hash && (hash != (expected_digest = columns_digest_for(klass)))
           raise ColumnsDigestMismatch,
             "\"#{hash}\" does not match the expected digest of \"#{expected_digest}\""
         end
@@ -127,6 +127,14 @@ module Paquito
         # wether the record was persisted or not.
         attributes = klass.attributes_builder.build_from_database(attributes_from_database, EMPTY_HASH)
         klass.allocate.init_with_attributes(attributes, new_record)
+      end
+
+      def columns_digest_for(klass)
+        if defined?(ActiveRecord::ModelSchema::SchemaContext)
+          klass.schema_context.paquito_columns_digest
+        else
+          klass.paquito_columns_digest
+        end
       end
     end
 
