@@ -108,6 +108,58 @@ class PaquitoActiveRecordCodecTest < PaquitoTest
     )
   end
 
+  if defined?(ActiveRecord::ModelSchema::SchemaContext)
+    test "caches the columns digest on each schema context" do
+      first_context = build_schema_context("first")
+      second_context = build_schema_context("second")
+
+      first_context.stub(:columns_hash, { "id" => Struct.new(:sql_type).new("INTEGER") }) do
+        second_context.stub(:columns_hash, { "id" => Struct.new(:sql_type).new("BIGINT") }) do
+          refute_equal first_context.paquito_columns_digest, second_context.paquito_columns_digest
+        end
+      end
+    end
+
+    test "a schema reload invalidates the schema context digest" do
+      context = build_schema_context("test")
+      if context.method(:reload_schema_from_cache).super_method
+        columns_hash = { "id" => Struct.new(:sql_type).new("INTEGER") }
+
+        context.stub(:columns_hash, columns_hash) do
+          first_digest = context.paquito_columns_digest
+          columns_hash["name"] = Struct.new(:sql_type).new("varchar")
+          assert_equal first_digest, context.paquito_columns_digest
+
+          context.reload_schema_from_cache
+          refute_equal first_digest, context.paquito_columns_digest
+        end
+      else
+        context = Shop.schema_context
+        context.paquito_columns_digest
+        Shop.send(:reload_schema_from_cache)
+        refute_same context, Shop.schema_context
+      end
+    end
+
+    test "serialization and deserialization use the model schema context" do
+      Shop.schema_context.stub(:paquito_columns_digest, 123) do
+        shop = Shop.find_by!(name: "Snow Devil")
+        payload = @codec.dump(shop)
+
+        assert_equal 123, payload.fetch(1).fetch(3)
+        assert_equal shop, @codec.load(payload)
+      end
+    end
+
+    private
+
+    def build_schema_context(name)
+      initializer = ActiveRecord::ModelSchema::SchemaContext.instance_method(:initialize)
+      arguments = initializer.arity == 1 ? [Shop] : [Shop, name]
+      ActiveRecord::ModelSchema::SchemaContext.new(*arguments)
+    end
+  end
+
   test "works with json column with symbol keys assigned" do
     extension = Extension.new(executable: { a: "b" })
     codec_reloaded = @codec.load(@codec.dump(extension))

@@ -44,6 +44,10 @@ jobs:
         ruby: [ ruby-head, '3.4', '3.3', '3.2']
         rails: [ '8.0', '7.2', '7.1']
         include:
+          - ruby: ruby-head
+            rails: head
+          - ruby: '3.4'
+            rails: head
           - ruby: '2.7'
             rails: '7.1'
           - ruby: '3.0'
